@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navigation from "@/components/Navigation";
+import { CartProvider } from "@/context/CartContext";
+import {Footer} from '@/components/Footer';
+import { Particles } from "@/components/ui/particles"
+import LoginPage from "./login/page";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,11 +31,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <CartProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Particles
+        className="fixed inset-0 z-0 pointer-events-none"
+        quantity={133}
+        ease={80}
+        color="#000000"
+        refresh
+        />
+        <Navigation />
+        <main className="mt-12">
+          {children}
+        </main>
+        <Footer />
       </body>
+      </CartProvider>
     </html>
   );
 }

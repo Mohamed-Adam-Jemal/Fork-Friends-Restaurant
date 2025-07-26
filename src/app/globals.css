@@ -1,9 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Merriweather+Sans:wght@400;600&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
 
 @theme inline {
   --color-background: var(--background);
@@ -23,4 +29,39 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+body { font-family: 'Merriweather Sans', sans-serif; color: #2b2b2b; background: #f9f7f2; }
+h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 15s ease infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 10s ease-in-out infinite;
+}
+
+@keyframes pulse-slower {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-slower {
+  animation: pulse-slower 15s ease-in-out infinite;
 }
