@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/twMerge";
 import { motion } from "motion/react";
 import React from "react";
 

@@ -45,7 +45,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="mt-11.5 md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center bg-gradient-to-br from-gold/40 via-burgundy/20 to-white px-6 py-12">
+    <div className="mt-11.5 md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center bg-[#B3905E]/15">
       <div className="mb-8 w-20 h-20 md:w-70 md:h-70 relative md:block hidden">
         <Image
           src="/FnF_Logo.png"

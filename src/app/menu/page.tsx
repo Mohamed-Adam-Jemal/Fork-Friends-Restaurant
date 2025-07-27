@@ -286,8 +286,8 @@ export default function MenuPage() {
                 onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
                 className={`px-5 py-2 rounded-full font-semibold whitespace-nowrap shadow transition flex items-center gap-1 ${
                   selectedCategory === category
-                    ? "bg-yellow-400 text-burgundy"
-                    : "bg-white text-burgundy hover:bg-yellow-300"
+                    ? "bg-[#B3905E] text-white"
+                    : "bg-white text-burgundy hover:bg-[#B3905E] hover:text-white"
                 }`}
                 aria-pressed={selectedCategory === category}
               >
@@ -300,7 +300,7 @@ export default function MenuPage() {
               <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-5 py-2 rounded-full bg-white text-burgundy font-semibold shadow-md flex justify-between items-center transition ring-1 ring-gray-300 focus:ring-2 focus:ring-yellow-400"
+                className="w-full px-5 py-2 rounded-full bg-white text-burgundy font-semibold shadow-md flex justify-between items-center transition"
               >
                 {priceRange || "All Prices"}
                 <svg
@@ -315,44 +315,49 @@ export default function MenuPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
                 </svg>
               </button>
-              {isOpen && (
-                <ul className="absolute w-full mt-2 bg-white rounded-xl shadow-lg overflow-hidden text-left z-40">
+
+              {/* Fluent transition dropdown */}
+              <ul
+                className={`absolute w-full mt-2 bg-white rounded-xl shadow-lg text-left z-40 overflow-hidden transform transition-all duration-700 ease-in-out 
+                  ${isOpen ? "max-h-96 opacity-100 scale-y-100" : "max-h-0 opacity-0 scale-y-95 pointer-events-none"}`}
+                style={{ transitionProperty: 'max-height, opacity, transform' }}
+              >
+                <li
+                  onClick={() => {
+                    setPriceRange(null);
+                    setIsOpen(false);
+                  }}
+                  className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 text-burgundy font-semibold ${
+                    !priceRange && "bg-[#B3905E] text-white"
+                  }`}
+                >
+                  All Prices
+                </li>
+                {priceRanges.map((range) => (
                   <li
+                    key={range.label}
                     onClick={() => {
-                      setPriceRange(null);
+                      setPriceRange(range.label);
                       setIsOpen(false);
                     }}
-                    className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 text-burgundy font-semibold ${
-                      !priceRange && "bg-[#B3905E]"
+                    className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 text-burgundy hover:text-white ${
+                      priceRange === range.label && "bg-[#B3905E] text-white font-semibold"
                     }`}
                   >
-                    All Prices
+                    {range.label}
                   </li>
-                  {priceRanges.map((range) => (
-                    <li
-                      key={range.label}
-                      onClick={() => {
-                        setPriceRange(range.label);
-                        setIsOpen(false);
-                      }}
-                      className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 text-burgundy ${
-                        priceRange === range.label && "bg-[#B3905E] font-semibold"
-                      }`}
-                    >
-                      {range.label}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                ))}
+              </ul>
             </div>
+
 
             {/* CHEF’S CHOICE TOGGLE */}
             <button
               onClick={() => setChefChoiceOnly(!chefChoiceOnly)}
               className={`px-5 py-2 rounded-full font-semibold whitespace-nowrap shadow transition flex items-center gap-1 ${
                 chefChoiceOnly
-                  ? "bg-yellow-400 text-burgundy"
-                  : "bg-white text-burgundy hover:bg-yellow-300"
+                  ? "bg-[#B3905E] text-white"
+                  : "bg-white text-burgundy hover:bg-[#B3905E] hover:text-white cursor-pointer"
               }`}
               aria-pressed={chefChoiceOnly}
             >

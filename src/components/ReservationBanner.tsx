@@ -4,7 +4,7 @@ export default function ReservationBanner({
   title = "Reserve Your Evening",
   description = "Savor bold flavors, handcrafted cocktails, and a setting designed to delight every sense.",
   buttonText = "Make a Reservation",
-  href = "/reserve",
+  href = "/reservation",
   backgroundImage = "/images/res-bg.jpg", // Customize this path
 }) {
   return (
@@ -32,23 +32,23 @@ export default function ReservationBanner({
         </p>
         <Link href={href} passHref>
           <button
-  className="
-    relative
-    inline-flex items-center justify-center
-    px-10 py-4
-    text-lg font-semibold
-    text-ivory
-    rounded-2xl
-    bg-gradient-to-r from-burgundy to-dark-burgundy
-    shadow-xl ring-1 ring-white/10 backdrop-blur-sm
-    transition-all duration-300 ease-in-out
-    hover:scale-105 hover:brightness-110 hover:shadow-2xl
-    focus:outline-none focus:ring-4 focus:ring-gold/50
-    before:absolute before:inset-0 before:rounded-2xl before:bg-white/5 before:opacity-0 hover:before:opacity-10
-  "
->
-  <span className="relative z-10">{buttonText}</span>
-</button>
+            className="
+              relative
+              inline-flex items-center justify-center
+              px-10 py-4
+              text-lg font-semibold
+              text-ivory
+              rounded-2xl
+              bg-gradient-to-r from-burgundy to-dark-burgundy
+              shadow-xl ring-1 ring-white/10 backdrop-blur-sm
+              transition-all duration-300 ease-in-out
+              hover:scale-105 hover:brightness-110 hover:shadow-2xl
+              focus:outline-none focus:ring-4 focus:ring-gold/50
+              before:absolute before:inset-0 before:rounded-2xl before:bg-white/5 before:opacity-0 hover:before:opacity-10
+            "
+          >
+            <span className="relative z-10">{buttonText}</span>
+          </button>
         </Link>
       </div>
     </section>

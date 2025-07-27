@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+
+  const router = useRouter();
 
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
@@ -29,33 +32,36 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    try {
-      console.log("Logging in:", { email, password });
-      await new Promise((r) => setTimeout(r, 1500));
-      // TODO: handle success (redirect / set auth state)
-    } catch {
-      setError("Login failed. Please try again.");
-    } finally {
-      setLoading(false);
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (res?.ok) {
+      router.push("/admin"); // ✅ redirect after login success
+    } else {
+      setError("Invalid email or password.");
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center bg-[#B3905E]/15">
       <div className="mb-8 w-20 h-20 md:w-70 md:h-70 relative md:block hidden">
         <Image
-            src="/FnF_Logo.png"
-            alt="Fork & Friends logo"
-            fill
-            className="drop-shadow-lg object-contain"
-            priority
+          src="/FnF_Logo.png"
+          alt="Fork & Friends logo"
+          fill
+          className="drop-shadow-lg object-contain"
+          priority
         />
-        </div>
-
+      </div>
 
       <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 sm:p-12">
         <h1 className="text-3xl font-extrabold text-center text-burgundy mb-8 tracking-wide drop-shadow-md">
-          Sign In
+          Admin Login
         </h1>
 
         {error && (
@@ -90,7 +96,7 @@ export default function LoginPage() {
             />
           </div>
 
-        <div className="relative">
+          <div className="relative">
             <label
               htmlFor="password"
               className="block mb-2 text-sm font-medium text-gray-700"
@@ -98,7 +104,7 @@ export default function LoginPage() {
               Password
             </label>
             <div className="relative flex items-center">
-                <input
+              <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
@@ -111,42 +117,31 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 aria-invalid={!!error}
                 disabled={loading}
-                />
-            <button
+              />
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 className="absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-burgundy transition"
-                >
+              >
                 {showPassword ? (
-                    <FiEyeOff className="h-6 w-6" />
+                  <FiEyeOff className="h-6 w-6" />
                 ) : (
-                    <FiEye className="h-6 w-6" />
+                  <FiEye className="h-6 w-6" />
                 )}
-                </button>
+              </button>
             </div>
-        </div>
+          </div>
 
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-xl bg-gradient-to-r from-burgundy to-gold py-3 text-gray-900 text-lg font-semibold shadow-lg hover:from-burgundy/90 hover:to-gold/90 transition disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? "Logging In..." : "Login"}
           </button>
-
         </form>
-
-        <p className="mt-8 text-center text-gray-600">
-          Don't have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-burgundy hover:underline"
-          >
-            Sign Up
-          </Link>
-        </p>
       </div>
     </div>
   );
