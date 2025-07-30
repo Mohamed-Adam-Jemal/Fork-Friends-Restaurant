@@ -7,6 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Table {
+  id       Int           @id @default(autoincrement())
+  number   Int           @unique
+  seats    Int
+  type     String        // e.g., "Indoor" or "Outdoor"
+  availability Boolean @default(true)
+  bookings Reservation[] // relation
+}
+
 model Reservation {
   id              Int      @id @default(autoincrement())
   firstName       String
@@ -18,8 +27,12 @@ model Reservation {
   guests          Int
   specialRequests String?
   occasion        String?
+  seating         String
+  tableNumber     Int
+  table           Table     @relation(fields: [tableNumber], references: [number])
   createdAt       DateTime @default(now())
 }
+
 
 model User {
   id        Int     @id @default(autoincrement())
@@ -31,3 +44,24 @@ model User {
   role      String
 }
 
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  category    String?
+  cuisine     String?
+  chefChoice  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  name      String   // Customer's name
+  email     String
+  phone     String
+  total     Float
+  items     Json     //JSON array of ordered items
+  createdAt DateTime @default(now())
+}

@@ -14,12 +14,15 @@ export default function ReservationPage() {
     time: "",
     guests: "2",
     specialRequests: "",
-    occasion: ""
+    occasion: "",
+    seating: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [reservedTableNumber, setReservedTableNumber] = useState<number | null>(null);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -30,29 +33,36 @@ export default function ReservationPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage("");
+  e.preventDefault();
+  setIsSubmitting(true);
+  setErrorMessage("");
+  setReservedTableNumber(null); // reset before new submission
 
-    try {
-      const res = await fetch("/api/reserve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  try {
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formData,
+        guests: parseInt(formData.guests, 10),
+      }),
+    });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to submit reservation");
-      }
-
-      setShowConfirmation(true);
-    } catch (error: any) {
-      setErrorMessage(error.message || "Something went wrong");
-    } finally {
-      setIsSubmitting(false);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to submit reservation");
     }
-  };
+
+    const data = await res.json();
+    setReservedTableNumber(data.tableNumber);  // <-- save the table number here
+    setShowConfirmation(true);
+  } catch (error: any) {
+    setErrorMessage(error.message || "Something went wrong");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   if (showConfirmation) {
     return (
@@ -67,8 +77,10 @@ export default function ReservationPage() {
               </div>
               <h1 className="text-4xl font-bold text-burgundy mb-4">Reservation Confirmed!</h1>
               <p className="text-xl text-charcoal mb-6">
-                Thank you, {formData.firstName}! Your table for {formData.guests} guests has been reserved.
+                Thank you, {formData.firstName}! Your table for {formData.guests} guests has been reserved. <br />
+                <strong>Your Table Number: {reservedTableNumber}</strong>
               </p>
+
               <div className="bg-gold/10 rounded-lg p-6 mb-8 text-left">
                 <h3 className="font-semibold text-burgundy mb-3">Reservation Details:</h3>
                 <div className="space-y-2 text-charcoal">
@@ -76,6 +88,7 @@ export default function ReservationPage() {
                   <p><span className="font-medium">Time:</span> {formData.time}</p>
                   <p><span className="font-medium">Party Size:</span> {formData.guests} guests</p>
                   <p><span className="font-medium">Contact:</span> {formData.email}</p>
+                  <p><span className="font-medium">Seating :</span> {formData.seating}</p>
                 </div>
               </div>
               <p className="text-charcoal/80 mb-8">
@@ -95,7 +108,8 @@ export default function ReservationPage() {
                     time: "",
                     guests: "2",
                     specialRequests: "",
-                    occasion: ""
+                    occasion: "",
+                    seating: ""
                   });
                 }}
               >
@@ -112,7 +126,7 @@ export default function ReservationPage() {
     <PageTransition>
       <div className="min-h-screen bg-[#B3905E]/15">
         {/* Hero Section */}
-        <section className="relative py-16 text-center">
+        <section className="relative pt-16 pb-10 text-center">
           <div className="container mx-auto px-6">
             <h1 className="text-5xl md:text-6xl font-bold text-burgundy mb-4">
               Reserve Your Table
@@ -124,16 +138,10 @@ export default function ReservationPage() {
         </section>
 
         {/* Reservation Form */}
-        <section className="py-16">
+        <section className="pb-16">
           <div className="container mx-auto px-6">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gold/20">
-                {/* Form Header */}
-                <div className="bg-gradient-to-r from-burgundy to-burgundy/90 ">
-                  <h2 className="text-2xl font-bold text-white">Reservation Details</h2>
-                  <p className="text-white/90 mt-1">Please fill in your information below</p>
-                </div>
-
                 <form onSubmit={handleSubmit} className="p-8">
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
                     {/* Personal Information */}
@@ -202,7 +210,26 @@ export default function ReservationPage() {
                           placeholder="(555) 123-4567"
                         />
                       </div>
+                      <div>
+  <label className="block text-sm font-medium text-charcoal mb-2">
+    Seating Preference *
+  </label>
+  <select
+    name="seating"
+    value={formData.seating}
+    onChange={handleInputChange}
+    required
+    className="w-full px-4 py-3 border border-gold/30 rounded-lg focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-300 bg-white/80"
+  >
+    <option value="">Select seating preference</option>
+    <option value="Indoor">Indoor</option>
+    <option value="Outdoor">Outdoor</option>
+  </select>
+</div>
+
+
                     </div>
+
 
                     {/* Reservation Details */}
                     <div className="space-y-6">

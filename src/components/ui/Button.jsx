@@ -7,7 +7,7 @@ export default function Button({
   size = "md",
   disabled = false,
   loading = false,
-  onClick,
+  onClick = () => {},
   type = "button",
   className = "",
   ...props

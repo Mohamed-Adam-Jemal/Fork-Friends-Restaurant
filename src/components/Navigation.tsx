@@ -62,7 +62,6 @@ export default function Navigation() {
       <nav
         className={`bg-white dark:bg-black fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-out
         ${visible ? "translate-y-0" : "-translate-y-full"}
-        ${scrolled ? "backdrop-blur-md shadow-xl border-b border-gold/30 dark:border-gold/50" : "shadow-lg dark:shadow-black/50"}
       `}
       >
         <div className="max-w-8xl mx-auto flex items-center justify-between px-6 py-2 md:py-1">
@@ -70,7 +69,7 @@ export default function Navigation() {
           <button
             onClick={toggleMenu}
             aria-label="Toggle Menu"
-            className="md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl text-burgundy hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95 group dark:text-gold dark:hover:from-gold/30 dark:hover:to-burgundy/30"
+            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl text-burgundy hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95 group dark:text-gold dark:hover:from-gold/30 dark:hover:to-burgundy/30"
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
               <span
@@ -108,17 +107,17 @@ export default function Navigation() {
             {/* Theme Toggle (Mobile) */}
             <button
               onClick={toggleTheme}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 transition-all hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="hover:bg-[#B3905E] hover:text-white w-10 h-10 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 transition-all hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
             >
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             <button
               onClick={toggleCart}
-              className="relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
             >
               <FaShoppingBasket className="text-xl" />
-              <span className="absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black">
+              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black ">
                 {cartCount}
               </span>
             </button>
@@ -134,8 +133,8 @@ export default function Navigation() {
                     className={`relative px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-300 ease-out overflow-hidden
                     ${
                       isActiveLink(link.href)
-                        ? "text-white bg-[#B3905E]/30 shadow-lg transform scale-105 dark:text-black dark:bg-gold/50"
-                        : "text-charcoal hover:text-[#B3905E]/50 dark:text-gray-300 dark:hover:text-gold"
+                        ? "text-white bg-[#B3905E]/70 shadow-lg transform scale-105 dark:text-black dark:bg-gold/50"
+                        : "text-charcoal hover:text-[#B3905E]/70 dark:text-gray-300 dark:hover:text-gold"
                     }`}
                   >
                     {link.label}
@@ -149,7 +148,7 @@ export default function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleTheme}
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="hover:bg-[#B3905E] hover:text-white w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
             >
               {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -157,10 +156,10 @@ export default function Navigation() {
             <button
               onClick={toggleCart}
               aria-label="Toggle Basket"
-              className="relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
             >
               <FaShoppingBasket className="text-xl" />
-              <span className="absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black">
+              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black">
                 {cartCount}
               </span>
             </button>
