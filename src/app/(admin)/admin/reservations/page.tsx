@@ -76,7 +76,7 @@ export default function ReservationsPage() {
   if (!confirmDelete) return;
 
   try {
-    const res = await fetch(`/api/reservation/${id}`, {
+    const res = await fetch(`/api/reservations/${id}`, {
       method: "DELETE",
     });
 
@@ -89,45 +89,83 @@ export default function ReservationsPage() {
   }
 }
 
+const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
+
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold text-[#B3905E] mb-8">Reservations Dashboard</h1>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-end gap-6 mb-8">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Filter by Date</label>
-          <input
-            type="date"
-            value={viewDate}
-            onChange={(e) => setViewDate(e.target.value)}
-            className="border rounded px-3 py-2 w-48"
-          />
-        </div>
+{/* Filter bar */}
+<div className="z-20 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center max-w-full mx-auto bg-[#B3905E]/30">
 
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Filter by Time</label>
-          <select
-            value={viewTime}
-            onChange={(e) => setViewTime(e.target.value)}
-            className="border rounded px-3 py-2 w-48"
-          >
-            <option value="">All Times</option>
-            <option>5:00 PM</option>
-            <option>6:00 PM</option>
-            <option>7:00 PM</option>
-            <option>8:00 PM</option>
-          </select>
-        </div>
+  {/* Filter by Date */}
+  <div className="flex flex-col">
+    <input
+      type="date"
+      value={viewDate}
+      onChange={(e) => setViewDate(e.target.value)}
+      className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-48 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
+    />
+  </div>
 
-        <button
-          onClick={fetchReservations}
-          className="bg-[#B3905E] text-white px-6 py-2 rounded hover:bg-[#a28054]"
+  {/* Filter by Time - Custom Dropdown */}
+  <div className="flex flex-col relative z-30">
+    {/* Trigger */}
+    <button
+      type="button"
+      onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
+      className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between font-semibold text-black"
+    >
+      {viewTime || 'All Times'}
+      <svg
+        className={`h-5 w-5 ml-2 transition-transform ${timeDropdownOpen ? "rotate-180" : "rotate-0"}`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
+
+    {/* Dropdown list */}
+    <ul
+      className={`absolute w-full mt-12 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
+        timeDropdownOpen
+          ? "max-h-96 opacity-100 scale-y-100"
+          : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
+      }`}
+    >
+      {["", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"].map((time) => (
+        <li
+          key={time || "all"}
+          onClick={() => {
+            setViewTime(time);
+            setTimeDropdownOpen(false);
+          }}
+          className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 hover:text-white ${
+            viewTime === time ? "bg-[#B3905E] text-white font-semibold" : ""
+          }`}
         >
-          Refresh
-        </button>
-      </div>
+          {time || "All Times"}
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  {/* Refresh Button */}
+  <div className="flex items-end">
+    <button
+      onClick={fetchReservations}
+      className="px-6 py-2 rounded-full bg-[#B3905E] text-white shadow-md hover:bg-[#a28054] transition font-semibold"
+    >
+      Refresh
+    </button>
+  </div>
+</div>
+
+
 
       {/* Reservation Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

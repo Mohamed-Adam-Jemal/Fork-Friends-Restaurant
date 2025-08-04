@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row h-screen">
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 z-50 bg-[#C8AD82] text-white flex items-center justify-between px-4 py-4 shadow-lg">
         <h2 className="text-xl font-extrabold tracking-wide">Admin Panel</h2>
@@ -91,9 +91,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-10 overflow-x-hidden overflow-y-auto bg-[#F1E8D8] mt-16 md:mt-0">
+      <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-hidden">
         {children}
       </main>
+
     </div>
   );
 }

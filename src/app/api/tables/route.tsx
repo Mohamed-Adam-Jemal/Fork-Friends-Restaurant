@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { supabase } from "@/lib/supabaseClient";
 
-const prisma = new PrismaClient();
-
+// GET: Fetch all tables
 export async function GET() {
   try {
-    const tables = await prisma.table.findMany();
+    const { data: tables, error } = await supabase.from("tables").select("*");
+
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      return NextResponse.json({ error: "Failed to fetch tables." }, { status: 500 });
+    }
+
     return NextResponse.json(tables, { status: 200 });
   } catch (error) {
     console.error("Error fetching tables:", error);
@@ -13,6 +18,7 @@ export async function GET() {
   }
 }
 
+// POST: Create a new table
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -22,16 +28,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
-    const table = await prisma.table.create({
-      data: {
-        number,
+    const { data, error } = await supabase.from("tables").insert([
+      {
+        table_number: number,
         seats,
         type,
         availability: true,
       },
-    });
+    ]).select().single(); // select().single() returns the inserted row
 
-    return NextResponse.json(table, { status: 201 });
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return NextResponse.json({ error: "Failed to create table." }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error("Error creating table:", error);
     return NextResponse.json({ error: "Failed to create table." }, { status: 500 });

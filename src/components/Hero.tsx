@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import PageTransition from "@/components/PageTransition";
 
 export default function Hero() {
   return (
     <PageTransition>
-    <section className="relative flex items-center justify-center text-center overflow-hidden pb-16.5">
+    <section className="relative flex items-center justify-center text-center overflow-hidden pb-50">
       {/* Content */}
       <div
       >

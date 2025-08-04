@@ -1,28 +1,27 @@
 // app/api/menu/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 
-const prisma = new PrismaClient()
-
-// GET: Fetch all menu items
 export async function GET(req: NextRequest) {
-  try {
-    const menuItems = await prisma.menuItem.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-    return NextResponse.json(menuItems)
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 })
+  const { data, error } = await supabase
+    .from('menu_items')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
   }
+
+  return NextResponse.json(data);
 }
 
-// POST: Add many menu items at once (bulk insert)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const items = Array.isArray(body) ? body : [body];
 
-    const items = Array.isArray(body) ? body : [body]; // wrap single item in array
-
+    // Validate required fields for each item
     for (const item of items) {
       if (!item.name || !item.price || !item.category) {
         return NextResponse.json(
@@ -32,21 +31,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await prisma.menuItem.createMany({
-      data: items.map((item) => ({
-        name: item.name,
-        description: item.description ?? '',
-        price: item.price,
-        image: item.image ?? '',
-        category: item.category,
-        chefChoice: item.chefChoice ?? false,
-      })),
-      skipDuplicates: true,
-    });
+    const { data, error } = await supabase
+      .from('menu_items')
+      .insert(
+        items.map((item) => ({
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          image: item.image || '',
+          category: item.category,
+          cuisine: item.cuisine || '',
+          featured: item.featured ?? false,
+          chef_choice: item.chefChoice ?? false,
+        }))
+      );
 
-    return NextResponse.json({ message: 'Menu items added successfully' }, { status: 201 });
+    if (error) {
+      console.error(error);
+      return NextResponse.json({ error: 'Failed to create menu items' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Menu items added successfully', data }, { status: 201 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to create menu items' }, { status: 500 });
+    console.error('POST error:', error);
+    return NextResponse.json({ error: 'Invalid request format' }, { status: 500 });
   }
 }

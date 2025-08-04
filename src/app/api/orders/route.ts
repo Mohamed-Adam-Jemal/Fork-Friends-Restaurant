@@ -1,14 +1,16 @@
+import { supabase } from '@/lib/supabaseClient';
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 // GET: fetch all orders
 export async function GET() {
   try {
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
     return NextResponse.json(orders);
   } catch (error) {
     console.error(error);
@@ -20,24 +22,27 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, total, items } = body;
+    const { name, email, phone, address, total, items } = body;
 
-    if (!name || !email || !phone || !total || !Array.isArray(items)) {
+    if (!name || !email || !phone || !address || !total || !Array.isArray(items)) {
       return NextResponse.json(
-        { error: 'Missing or invalid fields: name, email, phone, total, items[]' },
+        { error: 'Missing or invalid fields: name, email, phone, address, total, items[]' },
         { status: 400 }
       );
     }
 
-    const newOrder = await prisma.order.create({
-      data: {
+    const { data: newOrder, error } = await supabase.from('orders').insert([
+      {
         name,
         email,
         phone,
+        address,
         total,
         items,
       },
-    });
+    ]).select().single();
+
+    if (error) throw error;
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {

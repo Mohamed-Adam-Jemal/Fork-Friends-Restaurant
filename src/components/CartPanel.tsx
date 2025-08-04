@@ -10,11 +10,10 @@ interface CartPanelProps {
 }
 
 export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
-  const { cartCount, cartItems } = useCart();
+  const { cartCount, cart } = useCart();
 
   return (
     <>
-      {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
@@ -23,7 +22,6 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
         />
       )}
 
-      {/* Floating Cart UI */}
       <aside
         className={`fixed top-0 right-0 h-full w-75 md:w-100 max-w-full bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}
@@ -47,7 +45,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               <p className="text-center text-gray-500 mt-10">Your cart is empty.</p>
             ) : (
               <ul className="space-y-4">
-                {cartItems.map((item) => (
+                {cart.map((item) => (
                   <li key={item.id} className="flex items-center space-x-4">
                     <Image
                       src={item.image}
@@ -70,7 +68,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
           <footer className="p-4 border-t border-gray-200">
             <Link
               href="/order"
-              className="block w-full bg-burgundy text-white text-center py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition"
+              className="block w-full bg-burgundy text-black text-center py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition"
               onClick={onClose}
             >
               Go to Checkout

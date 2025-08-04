@@ -52,6 +52,7 @@ model MenuItem {
   image       String?
   category    String?
   cuisine     String?
+  featured  Boolean  @default(false)
   chefChoice  Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
@@ -61,7 +62,17 @@ model Order {
   name      String   // Customer's name
   email     String
   phone     String
+  address   String
   total     Float
   items     Json     //JSON array of ordered items
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  photo     String?
+  rating    Decimal  @db.Decimal(2, 1)
+  content   String
   createdAt DateTime @default(now())
 }

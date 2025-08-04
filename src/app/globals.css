@@ -65,3 +65,4 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; }
 .animate-pulse-slower {
   animation: pulse-slower 15s ease-in-out infinite;
 }
+

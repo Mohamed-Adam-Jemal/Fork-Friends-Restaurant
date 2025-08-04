@@ -106,7 +106,7 @@ export default function MenuPage() {
           </p>
 
           {/* FILTER BAR */}
-          <div className="bg-[#B3905E]/30 flex flex-wrap gap-4 py-4 mb-10 rounded-full shadow-inner px-6 justify-center max-w-full mx-auto">
+          <div className="bg-[#B3905E]/30 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center max-w-full mx-auto">
 
             {/* CATEGORY DROPDOWN */}
             <div className="relative" ref={categoryDropdownRef}>
@@ -204,42 +204,45 @@ export default function MenuPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {items.map((item) => (
                       <div
-                        key={item.id}
-                        className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 flex flex-col hover:-translate-y-1 transform"
+                    key={item.id}
+                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 flex flex-col hover:-translate-y-1 transform"
+                  >
+                    <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 group">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-xl transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {item.chefChoice && (
+                      <div
+                        className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-burgundy font-semibold text-sm shadow-lg"
+                        title="Chef's Choice"
                       >
-                        <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 group">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-xl transition-transform duration-500 group-hover:scale-105"
-                          />
-                          {item.chefChoice && (
-                            <span className="absolute top-3 left-3 bg-gold text-burgundy px-3 py-1 rounded-full text-xs font-semibold drop-shadow-lg">
-                              Chef's Choice
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="text-xl font-semibold text-burgundy">{item.name}</h3>
-                        <p className="text-gray-700 mt-1 flex-grow">{item.description}</p>
-                        <div className="flex justify-between items-center mt-6">
-                          <span className="text-lg font-semibold text-charcoal">
-                            ${item.price.toFixed(2)}
-                          </span>
-                          <Button
-                            onClick={() => handleAddClick(item)}
-                            variant="gold"
-                            size="sm"
-                            className={`bg-[#B3905E]/30 text-charcoal flex items-center gap-2 ${
-                              addingId === item.id ? "scale-95 shadow-inner" : ""
-                            }`}
-                          >
-                            <FaShoppingBasket className="text-xs" />
-                            {addingId === item.id ? "Added!" : "Add to Order"}
-                          </Button>
-                        </div>
+                        Chef's Choice
                       </div>
+                    )}
+                    </div>
+                    <h3 className="text-xl font-semibold text-burgundy">{item.name}</h3>
+                    <p className="text-gray-700 mt-1 flex-grow">{item.description}</p>
+
+                    <div className="flex justify-between items-center mt-6">
+                      <span className="text-lg font-semibold text-charcoal">${item.price.toFixed(2)}</span>
+                      <Button
+                        onClick={() => handleAddClick(item)}
+                        variant="gold"
+                        size="sm"
+                        className={`bg-[#B3905E]/30 text-charcoal flex items-center gap-2 ${
+                          addingId === item.id ? "scale-95 shadow-inner" : ""
+                        }`}
+                      >
+                        <FaShoppingBasket className="text-xs" />
+                        {addingId === item.id ? "Added!" : "Add to Order"}
+                      </Button>
+                    </div>
+                  </div>
+
                     ))}
                   </div>
                 </section>
@@ -289,7 +292,7 @@ function Dropdown({
         </svg>
       </button>
       <ul
-        className={`absolute w-full mt-2 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
+        className={`z-50 absolute w-full mt-2 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
           isOpen
             ? "max-h-96 opacity-100 scale-y-100"
             : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
