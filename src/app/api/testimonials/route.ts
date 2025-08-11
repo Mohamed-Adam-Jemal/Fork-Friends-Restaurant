@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(): Promise<NextResponse> {
+  const supabase = await createClient();
   try {
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')
-      .order('createdAt', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
@@ -20,6 +21,7 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const supabase = await createClient();
   try {
     const body = await req.json();
     const { name, photo, rating, content } = body;

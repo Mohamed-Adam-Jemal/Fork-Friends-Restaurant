@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { signIn } from "next-auth/react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,10 +17,34 @@ export default function LoginPage() {
 
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
+  // ✅ Check if user already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace("/admin"); // Redirect if logged in
+      }
+    };
+
+    checkSession();
+
+    // ✅ Listen for auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.replace("/admin");
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    // ✅ Validate before sending
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
       return;
@@ -32,23 +56,23 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    const res = await signIn("credentials", {
-      redirect: false,
+    // ✅ Supabase Auth login
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (res?.ok) {
-      router.push("/admin"); // ✅ redirect after login success
+    if (loginError) {
+      setError(loginError.message);
     } else {
-      setError("Invalid email or password.");
+      router.push("/admin");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center bg-[#B3905E]/15">
+    <div className="md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center">
       <div className="mb-8 w-20 h-20 md:w-70 md:h-70 relative md:block hidden">
         <Image
           src="/FnF_Logo.png"
@@ -60,7 +84,7 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 sm:p-12">
-        <h1 className="text-3xl font-extrabold text-center text-burgundy mb-8 tracking-wide drop-shadow-md">
+        <h1 className="!text-3xl font-extrabold text-center text-burgundy mb-8 tracking-wide drop-shadow-md">
           Admin Login
         </h1>
 
@@ -75,10 +99,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-8" noValidate>
           <div>
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
               Email Address
             </label>
             <input
@@ -97,10 +118,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
               Password
             </label>
             <div className="relative flex items-center">

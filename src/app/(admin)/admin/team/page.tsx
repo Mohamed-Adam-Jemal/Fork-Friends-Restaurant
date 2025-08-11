@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import FilteringBar from "@/components/ui/FilteringBar";
 
 type User = {
   id: number;
@@ -54,19 +55,20 @@ export default function TeamPage() {
       <h1 className="text-3xl font-bold mb-8 text-[#B3905E]">Team Members</h1>
 
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-10 max-w-md">
+      <FilteringBar>
+        {/* Search by Name */}
         <input
           type="text"
           placeholder="Search by name..."
           value={filterName}
           onChange={(e) => setFilterName(e.target.value)}
-          className="flex-grow px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+          className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
         />
 
         <select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
-          className="px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+          className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between text-black"
         >
           {roles.map((role) => (
             <option key={role} value={role}>
@@ -74,7 +76,7 @@ export default function TeamPage() {
             </option>
           ))}
         </select>
-      </div>
+      </FilteringBar>
 
       {/* Loading/Error */}
       {loading && <p>Loading users...</p>}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { FiUpload } from "react-icons/fi";
 import { compressImage } from "@/utils/compressImage";
+import FilteringBar from "@/components/ui/FilteringBar";
 
 type MenuItem = {
   id: number;
@@ -13,7 +14,7 @@ type MenuItem = {
   image?: string;
   category: string;
   chefChoice: boolean;
-  cuisine?: string; 
+  cuisine?: string;
 };
 
 const categories = ["All Categories", "Appetizers", "Main Dishes", "Sides", "Desserts"];
@@ -112,9 +113,9 @@ async function handleSubmit(e: React.FormEvent) {
   if (imageFile) {
     try {
       const formData = new FormData();
-      formData.append("file", imageFile); // directly upload imageFile without compressing here
+      formData.append("file", imageFile);
 
-      const uploadRes = await fetch("/api/upload-image", {
+      const uploadRes = await fetch("/api/upload-image/menu-items", {
         method: "POST",
         body: formData,
       });
@@ -212,8 +213,7 @@ async function handleSubmit(e: React.FormEvent) {
       </button>
 
       {/* Filter bar */}
-      <div className="z-20 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center max-w-full mx-auto  bg-[#B3905E]/30">
-
+      <FilteringBar>
         {/* Category dropdown */}
         <div className="relative w-auto z-30" ref={dropdownRef}>
           <button
@@ -277,7 +277,7 @@ async function handleSubmit(e: React.FormEvent) {
           onChange={(e) => setSearchName(e.target.value)}
           className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
         />
-      </div>
+      </FilteringBar>
 
       {loading && <p>Loading menu items...</p>}
       {error && <p className="text-red-600 mb-4">{error}</p>}
@@ -569,7 +569,7 @@ function ImageUpload({ imageFile, setImageFile, existingImage, setImage }: Image
           </div>
         ) : (
           <>
-            <FiUpload className="h-10 w-10 mb-2 text-gray-400" />
+            <FiUpload className="h-10 w-10 mb-2" />
             <p className="text-gray-600 text-sm">Click or drag & drop to upload an image</p>
           </>
         )}

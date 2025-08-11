@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
 
 export default function OrderPage() {
   const { cart, clearCart } = useCart();
@@ -88,13 +89,10 @@ export default function OrderPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-md mx-auto mt-30 mb-13 p-8 bg-white rounded-lg shadow text-center">
-        <h1 className="text-3xl font-bold mb-6">Your cart is empty.</h1>
-        <button
-          onClick={() => router.push("/")}
-          className="px-6 py-3 bg-burgundy text-white rounded-lg font-semibold hover:bg-burgundy/90 transition"
-        >
-          Go Shopping
-        </button>
+        <h1 className="!text-3xl font-bold mb-6">Your cart is empty.</h1>
+        <Button asChild variant="primary" onClick={() => router.push("/menu")}>
+          Order from menu
+        </Button>
       </div>
     );
   }

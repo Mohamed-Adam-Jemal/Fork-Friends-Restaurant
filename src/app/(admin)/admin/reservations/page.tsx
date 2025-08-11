@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
+import FilteringBar from "@/components/ui/FilteringBar";
 
 type Reservation = {
   id: number;
@@ -97,8 +98,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
       <h1 className="text-4xl font-bold text-[#B3905E] mb-8">Reservations Dashboard</h1>
 
 {/* Filter bar */}
-<div className="z-20 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center max-w-full mx-auto bg-[#B3905E]/30">
-
+<FilteringBar>
   {/* Filter by Date */}
   <div className="flex flex-col">
     <input
@@ -115,7 +115,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
     <button
       type="button"
       onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
-      className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between font-semibold text-black"
+      className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between text-black"
     >
       {viewTime || 'All Times'}
       <svg
@@ -163,7 +163,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
       Refresh
     </button>
   </div>
-</div>
+</FilteringBar>
 
 
 

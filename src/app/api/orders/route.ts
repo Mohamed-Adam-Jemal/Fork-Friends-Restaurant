@@ -1,9 +1,20 @@
-import { supabase } from '@/lib/supabaseClient';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// GET: fetch all orders
+// GET: fetch all orders (secured)
 export async function GET() {
   try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*')
@@ -18,9 +29,10 @@ export async function GET() {
   }
 }
 
-// POST: create new order
+// POST: create new order (open)
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await req.json();
     const { name, email, phone, address, total, items } = body;
 
@@ -31,16 +43,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: newOrder, error } = await supabase.from('orders').insert([
-      {
-        name,
-        email,
-        phone,
-        address,
-        total,
-        items,
-      },
-    ]).select().single();
+    const { data: newOrder, error } = await supabase
+      .from('orders')
+      .insert([
+        {
+          name,
+          email,
+          phone,
+          address,
+          total,
+          items,
+        },
+      ])
+      .select()
+      .single();
 
     if (error) throw error;
 

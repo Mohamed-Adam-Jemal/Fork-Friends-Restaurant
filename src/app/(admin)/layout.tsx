@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
-import Navigation from "@/components/Navigation";
-import { CartProvider } from "@/context/CartContext";
-import {Footer} from '@/components/Footer';
-import { Particles } from "@/components/ui/particles"
-import { ThemeProvider } from "@/context/ThemeContext";
 
 
 const geistSans = Geist({
@@ -30,22 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ThemeProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Particles
-        className="fixed inset-0 z-0 pointer-events-none"
-        quantity={133}
-        ease={80}
-        color="#000000"
-        refresh
-        />
-        <main>
+        <main >
           {children}
         </main>
       </body>
-      </ThemeProvider>
     </html>
   );
 }

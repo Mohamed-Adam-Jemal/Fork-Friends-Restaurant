@@ -144,20 +144,36 @@ export const AnimatedTestimonials = ({
               ))}
             </motion.p>
           </motion.div>
-          <div className="flex gap-4 pt-12 md:pt-0">
+          {/* Wrap text and arrows in a flex container */}
+          <div className="flex items-center justify-center pt-12 md:pt-0">
+            {/* Text info - keep this from your existing code */}
+            <div>
+              {/* (You already have this block with name and designation rendered above) */}
+            </div>
+
+            {/* Arrows container */}
+            <div className="flex gap-4">
             <button
               onClick={handlePrev}
-              className="bg-[#B3905E]/30 hover:bg-[#B3905E]/50 group/button flex h-7 w-7 items-center justify-center rounded-full dark:bg-neutral-800"
+              className="border border-[#333333] flex items-center justify-center rounded-full dark:bg-neutral-800 p-1.5 
+                        hover:scale-105 transition-transform duration-300 cursor-pointer"
+              aria-label="Previous testimonial"
             >
-              <IconArrowLeft className="h-5 w-5 text-black transition-transform duration-300 group-hover/button:rotate-12 dark:text-neutral-400" />
+              <IconArrowLeft className="h-6 w-6 text-black dark:text-neutral-400" />
             </button>
             <button
               onClick={handleNext}
-              className="bg-[#B3905E]/30 hover:bg-[#B3905E]/50 group/button flex h-7 w-7 items-center justify-center rounded-full dark:bg-neutral-800"
+              className="border border-[#333333] flex items-center justify-center rounded-full dark:bg-neutral-800 p-1.5 
+                        hover:scale-105 transition-transform duration-300 cursor-pointer"
+              aria-label="Next testimonial"
             >
-              <IconArrowRight className="h-5 w-5 text-black transition-transform duration-300 group-hover/button:-rotate-12 dark:text-neutral-400" />
+              <IconArrowRight className="h-6 w-6 text-black dark:text-neutral-400" />
             </button>
           </div>
+
+
+          </div>
+
         </div>
       </div>
     </div>

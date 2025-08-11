@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import FilteringBar from '@/components/ui/FilteringBar';
 
 type Order = {
   id: number;
@@ -57,7 +58,7 @@ export default function AdminPage() {
       <h1 className="text-3xl font-bold mb-8 text-[#B3905E]">Admin Dashboard - Orders</h1>
 
       {/* Filter bar */}
-      <div className="z-20 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center bg-[#B3905E]/30">
+      <FilteringBar className='w-full'>
         {/* Search by name */}
         <input
           type="text"
@@ -74,7 +75,7 @@ export default function AdminPage() {
           onChange={(e) => setSearchDate(e.target.value)}
           className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-52 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
         />
-      </div>
+      </FilteringBar>
 
       <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

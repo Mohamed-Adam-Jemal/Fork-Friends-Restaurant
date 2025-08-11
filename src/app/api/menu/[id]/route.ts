@@ -1,10 +1,22 @@
-// src/app/api/menu/[id]/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/server';
+
+// Helper to check session
+async function getUserSession() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
 
 // GET: Get item by ID
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getUserSession();
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabase = await createClient();
   const { id } = await params;
 
   const { data, error } = await supabase
@@ -26,6 +38,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // PUT: Update an item
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getUserSession();
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabase = await createClient();
   const { id } = await params;
   const updates = await req.json();
 
@@ -45,6 +64,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // DELETE: Delete an item
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getUserSession();
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabase = await createClient();
   const { id } = await params;
 
   const { error } = await supabase

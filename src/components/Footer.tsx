@@ -95,14 +95,14 @@ export const Footer = ({
                   className="h-10 w-auto"
                 />
               </a>
-              <h2 className="text-2xl font-semibold text-burgundy">{logo.title}</h2>
+              <h2 className="!text-2xl font-semibold">{logo.title}</h2>
             </div>
-            <p className="max-w-[90%] text-sm text-gray-600">
+            <p className="max-w-[90%] text-sm">
               {description}
             </p>
-            <ul className="flex items-center space-x-6 text-gray-600">
+            <ul className="flex items-center space-x-6">
               {socialLinks.map((social, idx) => (
-                <li key={idx} className="hover:text-burgundy transition-colors">
+                <li key={idx} className="hover:text-[#B3905E] transition-colors">
                   <a href={social.href} aria-label={social.label} target="_blank" rel="noopener noreferrer">
                     {social.icon}
                   </a>
@@ -114,10 +114,10 @@ export const Footer = ({
           <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20 lg:w-2/3">
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold text-gray-800">{section.title}</h3>
-                <ul className="space-y-3 text-sm text-gray-600">
+                <h3 className="mb-4 mt-1 font-bold !text-xl">{section.title}</h3>
+                <ul className="space-y-3 !text-sm">
                   {section.links.map((link, linkIdx) => (
-                    <li key={linkIdx} className="hover:text-burgundy transition-colors">
+                    <li key={linkIdx} className="hover:text-[#B3905E] transition-colors">
                       <a href={link.href}>{link.name}</a>
                     </li>
                   ))}
@@ -131,7 +131,7 @@ export const Footer = ({
           <p className="order-2 lg:order-1">{copyright}</p>
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
             {legalLinks.map((link, idx) => (
-              <li key={idx} className="hover:text-burgundy transition-colors">
+              <li key={idx} className="hover:text-[#B3905E] transition-colors">
                 <a href={link.href}>{link.name}</a>
               </li>
             ))}

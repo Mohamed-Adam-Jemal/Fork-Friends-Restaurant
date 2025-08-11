@@ -4,19 +4,15 @@ import Hero from '@/components/Hero';
 import FeaturedMenu from '@/components/FeaturedMenu';
 import ReservationBanner from '@/components/ReservationBanner';
 import Testimonials  from '@/components/Testimonials';
-import Navigation from "@/components/Navigation";
-import { CartProvider } from "@/context/CartContext";
-import {Footer} from '@/components/Footer';
+
 
 export default function HomePage() {
   return (
     <>
-    <CartProvider>
-    <Navigation />
-      <main className="min-h-screen w-full overflow-x-hidden bg-[#B3905E]/15 text-gray-800 font-sans pt-20">
+      <main className="min-h-screen w-full overflow-x-hidden bg-[#B3905E]/15 text-gray-800 font-sans mt-17 dark:bg-black">
         {/* <BackgroundLines className="absolute inset-0 pointer-events-none" /> */}
         {/* Hero Section */}
-        <section className="relative z-10">
+        <section className="relative z-10 h-screen pt-15 md:pt-20" style={{ height: "calc(100vh - 4.25rem)" }}>
           <Hero />
         </section>
 
@@ -32,8 +28,6 @@ export default function HomePage() {
           <Testimonials />
         </section>
       </main>
-    <Footer />
-    </CartProvider>
     </>
   );
 }

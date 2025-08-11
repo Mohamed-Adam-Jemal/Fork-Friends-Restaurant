@@ -5,10 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { FaShoppingBasket } from "react-icons/fa";
-import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import CartPanel from "./CartPanel";
-import { useTheme } from "@/context/ThemeContext";
 
 export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,7 +17,6 @@ export default function Navigation() {
   const pathname = usePathname();
 
   const { cartCount } = useCart();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,16 +57,15 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className={`bg-white dark:bg-black fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-out
-        ${visible ? "translate-y-0" : "-translate-y-full"}
-      `}
+        className={`bg-white fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-out
+        ${visible ? "translate-y-0" : "-translate-y-full"}`}
       >
         <div className="max-w-8xl mx-auto flex items-center justify-between px-6 py-2 md:py-1">
           {/* Hamburger */}
           <button
             onClick={toggleMenu}
             aria-label="Toggle Menu"
-            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl text-burgundy hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95 group dark:text-gold dark:hover:from-gold/30 dark:hover:to-burgundy/30"
+            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl text-burgundy hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95"
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
               <span
@@ -104,20 +100,12 @@ export default function Navigation() {
 
           {/* Mobile Cart */}
           <div className="flex items-center space-x-3 md:hidden">
-            {/* Theme Toggle (Mobile) */}
-            <button
-              onClick={toggleTheme}
-              className="hover:bg-[#B3905E] hover:text-white w-10 h-10 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 transition-all hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
-            >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
             <button
               onClick={toggleCart}
-              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
               <FaShoppingBasket className="text-xl" />
-              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black ">
+              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>
@@ -133,8 +121,8 @@ export default function Navigation() {
                     className={`relative px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-300 ease-out overflow-hidden
                     ${
                       isActiveLink(link.href)
-                        ? "text-white bg-[#B3905E]/70 shadow-lg transform scale-105 dark:text-black dark:bg-gold/50"
-                        : "text-charcoal hover:text-[#B3905E]/70 dark:text-gray-300 dark:hover:text-gold"
+                        ? "text-white bg-[#B3905E]/70 shadow-lg transform scale-105"
+                        : "text-charcoal hover:text-[#B3905E]/70"
                     }`}
                   >
                     {link.label}
@@ -144,22 +132,15 @@ export default function Navigation() {
             </ul>
           </div>
 
-          {/* Desktop Cart + Theme Toggle*/}
+          {/* Desktop Cart */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={toggleTheme}
-              className="hover:bg-[#B3905E] hover:text-white w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
-            >
-              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-
             <button
               onClick={toggleCart}
               aria-label="Toggle Basket"
-              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 dark:bg-black dark:text-gold dark:hover:bg-gold/30"
+              className="cursor-pointer hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
               <FaShoppingBasket className="text-xl" />
-              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform dark:bg-gold dark:text-black">
+              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>
@@ -172,7 +153,7 @@ export default function Navigation() {
             menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="bg-gradient-to-b from-white/98 to-white/95 backdrop-blur-sm border-t border-gold/20 shadow-lg dark:from-black/95 dark:to-black/90 dark:border-gold/50 dark:shadow-black/50">
+          <div className="bg-gradient-to-b from-white/98 to-white/95 backdrop-blur-sm border-t border-gold/20 shadow-lg">
             <ul className="space-y-1 py-2 px-1.5">
               {navLinks.map((link, index) => (
                 <li
@@ -188,8 +169,8 @@ export default function Navigation() {
                     className={`relative block px-5 py-4 rounded-xl font-semibold text-lg transition-all duration-300 ease-out group overflow-hidden hover:scale-105 active:scale-95
                       ${
                         isActiveLink(link.href)
-                          ? "text-black bg-[#B3905E]/30 shadow-lg dark:text-black dark:bg-gold/50"
-                          : "text-charcoal hover:text-burgundy dark:text-gray-300 dark:hover:text-gold"
+                          ? "text-black bg-[#B3905E]/30 shadow-lg"
+                          : "text-charcoal hover:text-burgundy"
                       }`}
                   >
                     {link.label}

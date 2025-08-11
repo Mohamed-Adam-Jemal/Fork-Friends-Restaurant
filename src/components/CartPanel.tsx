@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { Trash2 } from 'lucide-react';
 
 interface CartPanelProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface CartPanelProps {
 }
 
 export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
-  const { cartCount, cart } = useCart();
+  const { cartCount, cart, decreaseQuantity, removeFromCart } = useCart();
 
   return (
     <>
@@ -30,11 +31,11 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
       >
         <div className="flex flex-col h-full">
           <header className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Your Cart</h2>
+            <h2 className="!text-xl font-semibold">Your Cart</h2>
             <button
               onClick={onClose}
               aria-label="Close Cart"
-              className="text-gray-600 hover:text-gray-900 transition"
+              className="text-gray-600 hover:text-gray-900 transition cursor-pointer transition-transform duration-200 hover:scale-110"
             >
               ✕
             </button>
@@ -46,18 +47,38 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
             ) : (
               <ul className="space-y-4">
                 {cart.map((item) => (
-                  <li key={item.id} className="flex items-center space-x-4">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="rounded-lg object-cover"
-                    />
-                    <div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      <p className="text-sm font-semibold">${item.price}</p>
+                  <li key={item.id} className="flex items-center space-x-4 justify-between border-b border-gray-300 last:border-b-0 pb-4 mb-4">
+                    <div className="flex items-center space-x-4">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="rounded-lg object-cover"
+                      />
+                      <div>
+                        <h3 className="!text-xl font-semibold">{item.name}</h3>
+                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        <p className="text-sm font-semibold">${item.price}</p>
+                      </div>
+                    </div>
+
+                    {/* Controls */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <button
+                        onClick={() => decreaseQuantity(item.id)}
+                        aria-label={`Decrease quantity of ${item.name}`}
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 rounded px-3 py-1 transition cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        aria-label={`Remove ${item.name} from cart`}
+                        className="bg-red-500 hover:bg-red-600 text-white rounded px-2 py-2 transition cursor-pointer"
+                      >
+                        <Trash2 size={18}/>
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -68,7 +89,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
           <footer className="p-4 border-t border-gray-200">
             <Link
               href="/order"
-              className="block w-full bg-burgundy text-black text-center py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition"
+              className="block w-full text-black text-center py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition cursor-pointer transition-transform duration-200 hover:scale-110"
               onClick={onClose}
             >
               Go to Checkout

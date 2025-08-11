@@ -4,12 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { Team } from "@/components/Team"; // wherever you save it
 import PageTransition from "@/components/PageTransition";
+import Button from "@/components/ui/Button";
 
 
 export default function AboutPage() {
   return (
     <PageTransition>
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#B3905E]/15 px-6 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 sm:p-16 text-center">
         <div className="relative w-32 h-32 mx-auto mb-6">
           <Image
@@ -21,7 +22,7 @@ export default function AboutPage() {
           />
         </div>
 
-        <h1 className="text-4xl font-extrabold text-burgundy mb-4">
+        <h1 className="text-4xl font-extrabold mb-4">
           About Fork & Friends
         </h1>
         <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6 leading-relaxed">
@@ -35,16 +36,15 @@ export default function AboutPage() {
           or join our events, Fork & Friends welcomes you with open arms and an open table.
         </p>
 
-        <h2 className="text-3xl font-bold text-burgundy mt-12 mb-8">
+        <h2 className="text-3xl font-bold mt-12 mb-8">
           Meet the Fork & Friends Team
         </h2>
         <Team />
 
-        <Link
-          href="/"
-          className="bg-[#B3905E]/30 hover:bg-[#B3905E]/50 inline-block bg-burgundy text-black py-3 px-8 rounded-xl font-semibold shadow-lg hover:bg-burgundy/90 transition"
-        >
-          Back to Home
+        <Link href="/" passHref>
+          <Button asChild variant="primary">
+            Back to Home
+          </Button>
         </Link>
       </div>
     </div>

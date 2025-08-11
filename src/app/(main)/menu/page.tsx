@@ -2,10 +2,14 @@
 
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
-import { FaShoppingBasket } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import Button from "@/components/ui/Button";
 import PageTransition from "@/components/PageTransition";
+import FilteringBar from "@/components/ui/FilteringBar";
+import Dropdown from "@/components/ui/Dropdown";
+import Spinner from "@/components/ui/Spinner";
+import { MdPedalBike } from "react-icons/md";
+
 
 const categories = ["Appetizers", "Main Dishes", "Sides", "Desserts"];
 const cuisines = ["Italian", "Turkish", "French", "Japanese", "Mexican"];
@@ -50,36 +54,48 @@ export default function MenuPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    async function fetchMenuItems() {
-      try {
-        const res = await fetch("/api/menu");
-        const data = await res.json();
+useEffect(() => {
+  async function fetchMenuItems() {
+    try {
+      const res = await fetch("/api/menu");
+      const data = await res.json();
+
+      if (res.ok && Array.isArray(data)) {
         setMenuItems(data);
-      } catch (error) {
-        console.error("Failed to fetch menu items", error);
-      } finally {
-        setLoading(false);
+      } else {
+        // Handle error response gracefully
+        console.error("Error fetching menu items:", data.error || data);
+        setMenuItems([]); // set empty array to avoid crashes
       }
+    } catch (error) {
+      console.error("Failed to fetch menu items", error);
+      setMenuItems([]); // fallback
+    } finally {
+      setLoading(false);
     }
-    fetchMenuItems();
-  }, []);
+  }
+  fetchMenuItems();
+}, []);
 
-  const filteredItems = menuItems.filter((item) => {
-    if (selectedCategory && item.category !== selectedCategory) return false;
-    if (selectedCuisine && item.cuisine !== selectedCuisine) return false;
+// Before filtering, check if menuItems is array
+const filteredItems = Array.isArray(menuItems)
+  ? menuItems.filter((item) => {
+      if (selectedCategory && item.category !== selectedCategory) return false;
+      if (selectedCuisine && item.cuisine !== selectedCuisine) return false;
 
-    if (priceRange) {
-      const priceNum = Number(item.price);
-      const range = priceRanges.find((r) => r.label === priceRange);
-      if (!range) return true;
-      if (priceNum < range.min || priceNum > range.max) return false;
-    }
+      if (priceRange) {
+        const priceNum = Number(item.price);
+        const range = priceRanges.find((r) => r.label === priceRange);
+        if (!range) return true;
+        if (priceNum < range.min || priceNum > range.max) return false;
+      }
 
-    if (chefChoiceOnly && !item.chefChoice) return false;
+      if (chefChoiceOnly && !item.chefChoice) return false;
 
-    return true;
-  });
+      return true;
+    })
+  : [];  // fallback empty array if menuItems is not an array
+
 
   const filteredCategories = categories.filter((cat) =>
     filteredItems.some((item) => item.category === cat)
@@ -91,22 +107,33 @@ export default function MenuPage() {
   const handleAddClick = (item: any) => {
     setAddingId(item.id);
     addToCart(item);
-    setTimeout(() => setAddingId(null), 800);
+    setTimeout(() => setAddingId(null), 1000);
   };
 
   return (
     <PageTransition>
-      <main className="bg-[#B3905E]/15 py-16">
-        <div className="max-w-5xl mx-auto text-center px-4 relative z-10">
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-burgundy mb-6 drop-shadow-sm">
-            Discover Our Menu
-          </h1>
-          <p className="text-lg md:text-xl text-charcoal/80 max-w-2xl mx-auto mb-12">
-            Crafted with passion, served with elegance — a symphony of flavors awaits you.
-          </p>
+      <main className="py-16 relative">
+      {/* Background image */}
+      <div
+        className="absolute inset-0 bg-contain z-0"
+        style={{ backgroundImage: 'url(/images/bg-menu12.png)' }}
+        aria-hidden="true"
+      ></div>
+
+      {/* Black overlay */}
+      {/* <div className="absolute inset-0 bg-black opacity-50 z-0" aria-hidden="true"></div> */}
+
+      {/* Content */}
+      <div className="max-w-5xl mx-auto text-center px-4 relative z-10">
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-sm">
+          Discover Our Menu
+        </h1>
+        <p className="text-lg md:text-xl max-w-2xl mx-auto mb-12">
+          Crafted with passion, served with elegance — a symphony of flavors awaits you.
+        </p>
 
           {/* FILTER BAR */}
-          <div className="bg-[#B3905E]/30 flex flex-wrap gap-4 py-4 mb-10 rounded-[30px] shadow-inner px-6 justify-center max-w-full mx-auto">
+          <FilteringBar>
 
             {/* CATEGORY DROPDOWN */}
             <div className="relative" ref={categoryDropdownRef}>
@@ -159,10 +186,10 @@ export default function MenuPage() {
             {/* CHEF’S CHOICE TOGGLE */}
             <button
               onClick={() => setChefChoiceOnly(!chefChoiceOnly)}
-              className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 ${
+              className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 cursor-pointer ${
                 chefChoiceOnly
                   ? "bg-[#B3905E] text-white"
-                  : "bg-white text-burgundy hover:bg-[#B3905E] hover:text-white"
+                  : "bg-white hover:bg-[#B3905E] hover:text-white"
               }`}
             >
               Chef's Choice
@@ -177,18 +204,18 @@ export default function MenuPage() {
                   setPriceRange(null);
                   setChefChoiceOnly(false);
                 }}
-                className="px-4 py-2 rounded-full font-semibold shadow bg-red-400 text-white hover:bg-red-500 transition"
+                className="px-4 py-2 rounded-full font-semibold shadow bg-red-400 text-white hover:bg-red-500 transition cursor-pointer"
               >
                 Clear Filters
               </button>
             )}
-          </div>
+          </FilteringBar>
 
           {/* MENU ITEMS */}
           {loading ? (
-            <p className="text-charcoal/70 text-lg mt-12">Loading menu...</p>
+            <Spinner name="Menu Items"/>
           ) : filteredCategories.length === 0 ? (
-            <p className="text-charcoal/70 text-lg mt-12">No items match your filters.</p>
+            <p className="text-lg mt-12">No items match your filters.</p>
           ) : (
             filteredCategories.map((category) => {
               const items = getItemsByCategory(category);
@@ -196,7 +223,7 @@ export default function MenuPage() {
                 <section key={category} className="mb-16 scroll-mt-24">
                   <div className="flex items-center justify-center mb-6">
                     <hr className="border-t border-gold w-1/5" />
-                    <span className="mx-4 text-burgundy text-xl font-semibold uppercase tracking-wide">
+                    <span className="mx-4 text-xl font-semibold uppercase tracking-wide">
                       {category}
                     </span>
                     <hr className="border-t border-gold w-1/5" />
@@ -217,29 +244,33 @@ export default function MenuPage() {
                       />
                       {item.chefChoice && (
                       <div
-                        className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-burgundy font-semibold text-sm shadow-lg"
+                        className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 font-semibold text-sm shadow-lg"
                         title="Chef's Choice"
                       >
                         Chef's Choice
                       </div>
                     )}
                     </div>
-                    <h3 className="text-xl font-semibold text-burgundy">{item.name}</h3>
-                    <p className="text-gray-700 mt-1 flex-grow">{item.description}</p>
+                    <h3 className="!text-xl font-semibold">{item.name}</h3>
+                    <p className="!text-gray-700 mt-1 flex-grow">{item.description}</p>
 
                     <div className="flex justify-between items-center mt-6">
-                      <span className="text-lg font-semibold text-charcoal">${item.price.toFixed(2)}</span>
+                      <span className="text-lg font-semibold ">${item.price.toFixed(2)}</span>
                       <Button
                         onClick={() => handleAddClick(item)}
-                        variant="gold"
-                        size="sm"
-                        className={`bg-[#B3905E]/30 text-charcoal flex items-center gap-2 ${
-                          addingId === item.id ? "scale-95 shadow-inner" : ""
-                        }`}
+                        size="md"
+                        className={`
+                          border border-gold/30
+                          flex items-center gap-2 px-3 py-2 text-base
+                          hover:scale-105
+                          focus:ring-burgundy/30
+                          ${addingId === item.id ? "scale-95 shadow-inner" : ""}
+                        `}
                       >
-                        <FaShoppingBasket className="text-xs" />
-                        {addingId === item.id ? "Added!" : "Add to Order"}
+                        <MdPedalBike size={20} />
+                        {addingId === item.id ? "Added to Cart!" : "Order"} 
                       </Button>
+
                     </div>
                   </div>
 
@@ -252,70 +283,5 @@ export default function MenuPage() {
         </div>
       </main>
     </PageTransition>
-  );
-}
-
-// Reusable Dropdown Component
-function Dropdown({
-  label,
-  isOpen,
-  onToggle,
-  onSelect,
-  options,
-  allLabel,
-  selected,
-}: {
-  label: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  onSelect: (value: string | null) => void;
-  options: string[];
-  allLabel: string;
-  selected: string | null;
-}) {
-  return (
-    <>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="px-5 py-2 rounded-full bg-white text-burgundy font-semibold shadow-md flex items-center gap-2"
-      >
-        {label}
-        <svg
-          className={`h-5 w-5 transition-transform ${isOpen ? "rotate-180" : "rotate-0"}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
-      <ul
-        className={`z-50 absolute w-full mt-2 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
-          isOpen
-            ? "max-h-96 opacity-100 scale-y-100"
-            : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
-        }`}
-      >
-        <li
-          onClick={() => onSelect(null)}
-          className="px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 text-burgundy font-semibold"
-        >
-          {allLabel}
-        </li>
-        {options.map((option) => (
-          <li
-            key={option}
-            onClick={() => onSelect(option)}
-            className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 text-burgundy hover:text-white ${
-              selected === option ? "bg-[#B3905E] text-white font-semibold" : ""
-            }`}
-          >
-            {option}
-          </li>
-        ))}
-      </ul>
-    </>
   );
 }

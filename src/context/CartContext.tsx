@@ -1,4 +1,3 @@
-// context/CartContext.tsx or context.tsx
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useMemo } from "react";
@@ -20,6 +19,7 @@ type CartContextType = {
   cartCount: number;
   addToCart: (item: MenuItem) => void;
   removeFromCart: (id: number) => void;
+  decreaseQuantity: (id: number) => void;  // <-- new
   clearCart: () => void;
 };
 
@@ -49,6 +49,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // New function: decrease quantity by 1, remove if quantity hits 0
+  const decreaseQuantity = (id: number) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter((item) => item.quantity > 0) // remove if quantity <= 0
+    );
+  };
+
+  // Existing remove item completely
   const removeFromCart = (id: number) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
@@ -57,7 +69,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart([]);
   };
 
-  // ✅ Compute cartCount using useMemo
   const cartCount = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
     [cart]
@@ -65,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, cartCount, addToCart, removeFromCart, clearCart }}
+      value={{ cart, cartCount, addToCart, removeFromCart, decreaseQuantity, clearCart }}
     >
       {children}
     </CartContext.Provider>

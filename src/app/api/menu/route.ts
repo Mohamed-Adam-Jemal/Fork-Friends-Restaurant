@@ -1,8 +1,9 @@
 // app/api/menu/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('menu_items')
     .select('*')
@@ -17,6 +18,17 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+
+  // Get user session from cookies
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const items = Array.isArray(body) ? body : [body];

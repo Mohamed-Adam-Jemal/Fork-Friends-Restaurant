@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FaUsers,
   FaUtensils,
@@ -13,6 +13,8 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+
+import { supabase } from "@/lib/supabaseClient";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <FaHome /> },
@@ -25,6 +27,16 @@ const navLinks = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error.message);
+    } else {
+      router.push("/login"); // redirect to your login page
+    }
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
@@ -42,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="hidden md:block mb-10">
-          <h2 className="text-3xl font-extrabold tracking-wide text-center text-[#B3905E] drop-shadow-md">
+          <h2 className="!text-2xl font-extrabold tracking-wide text-center text-[#B3905E] drop-shadow-md">
             Admin Panel
           </h2>
         </div>
@@ -68,13 +80,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="mt-auto pt-10">
-          <Link
-            href="/api/auth/signout"
-            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm"
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm w-full"
           >
             <FaSignOutAlt className="text-lg" />
             Logout
-          </Link>
+          </button>
 
           <p className="text-sm text-[#B3905E] text-center mt-6">
             &copy; {new Date().getFullYear()} Fork & Friends
@@ -94,7 +106,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-hidden">
         {children}
       </main>
-
     </div>
   );
 }

@@ -18,10 +18,10 @@ export default function Hero() {
           className="mx-auto mb-6 drop-shadow-lg"
           priority
         />
-        <h1 className="text-[#B3905E] dark:text-white text-5xl md:text-7xl font-extrabold text-burgundy mb-6 leading-tight tracking-wide">
+        <h1 className="!text-[#B3905E] dark:text-white text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-wide">
           Fork & Friends
         </h1>
-        <p className="text-lg md:text-xl text-charcoal mb-10 max-w-xl mx-auto">
+        <p className="text-lg md:text-2xl mb-10 max-w-xl mx-auto">
           Timeless elegance meets warm hospitality. Experience fine dining reimagined.
         </p>
         {/* Animated Down Arrow */}

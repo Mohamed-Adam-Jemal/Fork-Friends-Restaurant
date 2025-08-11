@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/server';
+
+// Helper to check auth session
+async function checkSession() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  return { session, supabase };
+}
 
 // GET single order
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;  // await params here
+    const { session, supabase } = await checkSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
     const { data: order, error } = await supabase
       .from('orders')
       .select('*')
@@ -28,7 +40,12 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 // PUT: update order
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;  // await params here
+    const { session, supabase } = await checkSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
     const body = await req.json();
     const { name, email, phone, total, items } = body;
 
@@ -51,7 +68,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 // DELETE order
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;  // await params here
+    const { session, supabase } = await checkSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
     const { error } = await supabase.from('orders').delete().eq('id', id);
 
     if (error) throw error;
