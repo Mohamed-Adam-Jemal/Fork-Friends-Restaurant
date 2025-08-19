@@ -4,8 +4,6 @@ import "@/app/globals.css";
 import Navigation from "@/components/Navigation";
 import { CartProvider } from "@/context/CartContext";
 import {Footer} from '@/components/Footer';
-import { Particles } from "@/components/ui/particles"
-import { ThemeProvider } from "@/context/ThemeContext";
 
 
 const geistSans = Geist({
@@ -30,18 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ThemeProvider>
       <CartProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Particles
-        className="fixed inset-0 z-0 pointer-events-none"
-        quantity={110}
-        ease={50}
-        color="#000000"
-        refresh
-        />
         <Navigation />
         <main className="mt-12">
           {children}
@@ -49,7 +39,6 @@ export default function RootLayout({
         <Footer />
       </body>
       </CartProvider>
-      </ThemeProvider>
     </html>
   );
 }

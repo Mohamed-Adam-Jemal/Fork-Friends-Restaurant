@@ -7,6 +7,10 @@
   --body-font: 'Open Sans', sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--body-font);
   background: var(--background);
@@ -32,7 +36,7 @@ h2 {
 }
 
 h3 {
-  font-size: 2rem;
+  font-size: 1.25rem;
 }
 
 h4 {

@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 
 import { supabase } from "@/lib/supabaseClient";
+import Spinner from "@/components/ui/Spinner"; // make sure Spinner exists
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <FaHome /> },
@@ -26,15 +27,18 @@ const navLinks = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // new loading state
   const pathname = usePathname();
   const router = useRouter();
 
   async function handleSignOut() {
+    setLoading(true); // start loading
     const { error } = await supabase.auth.signOut();
+    setLoading(false); // stop loading
     if (error) {
       console.error("Error signing out:", error.message);
     } else {
-      router.push("/login"); // redirect to your login page
+      router.push("/login"); // redirect to login
     }
   }
 
@@ -42,19 +46,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-col md:flex-row h-screen">
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 z-50 bg-[#C8AD82] text-white flex items-center justify-between px-4 py-4 shadow-lg">
-        <h2 className="text-xl font-extrabold tracking-wide">Admin Panel</h2>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="focus:outline-none">
+        <h2 className="!text-2xl font-extrabold tracking-wide !text-white">Admin Panel</h2>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="focus:outline-none cursor-pointer">
           {sidebarOpen ? <FaTimes className="text-2xl" /> : <FaBars className="text-2xl" />}
         </button>
       </header>
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-64 bg-white text-[#B3905E] flex flex-col p-6 shadow-xl transition-transform duration-300 ease-in-out
+        className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-72 bg-white text-[#B3905E] flex flex-col p-6 shadow-xl transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="hidden md:block mb-10">
-          <h2 className="!text-2xl font-extrabold tracking-wide text-center text-[#B3905E] drop-shadow-md">
+          <h2 className="!text-3xl font-extrabold tracking-wide text-center text-[#B3905E]">
             Admin Panel
           </h2>
         </div>
@@ -66,13 +70,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 px-5 py-3 rounded-xl transition-all font-semibold text-lg ${
+                className={`flex items-center gap-3 px-5 py-3 rounded-xl transition-all font-semibold text-xl ${
                   isActive
                     ? "bg-[#C8AD82] text-white shadow"
                     : "text-[#B3905E] hover:bg-[#F1E8D8] hover:text-[#B3905E]"
                 }`}
               >
-                <span className="text-xl">{icon}</span>
+                <span className="text-2xl">{icon}</span>
                 <span>{label}</span>
               </Link>
             );
@@ -82,11 +86,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="mt-auto pt-10">
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm w-full"
+            className="flex justify-center items-center px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm w-full cursor-pointer"
           >
-            <FaSignOutAlt className="text-lg" />
-            Logout
+            {loading ? (
+              <Spinner name="Logging out" />
+            ) : (
+              <>
+                <FaSignOutAlt className="text-lg" />
+                Logout
+              </>
+            )}
           </button>
+
 
           <p className="text-sm text-[#B3905E] text-center mt-6">
             &copy; {new Date().getFullYear()} Fork & Friends
@@ -103,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content */}
-      <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-hidden">
+      <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-y-auto">
         {children}
       </main>
     </div>

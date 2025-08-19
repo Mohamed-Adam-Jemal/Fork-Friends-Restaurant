@@ -23,15 +23,7 @@ export default function Button({
       focus:ring-burgundy/30
     `,
     secondary: `
-      bg-[#B3905E]
-      hover:bg-[#9f7a38]
-      text-white
-      font-semibold
-      py-2 px-4
-      rounded-lg
-      shadow-md
-      transition
-      cursor-pointer
+      px-6 py-2 rounded-full bg-[#B3905E] text-white shadow-md hover:bg-[#a28054] transition font-semibold
     `,
   };
 

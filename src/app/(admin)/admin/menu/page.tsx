@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { FiUpload } from "react-icons/fi";
 import { compressImage } from "@/utils/compressImage";
 import FilteringBar from "@/components/ui/FilteringBar";
+import Spinner from "@/components/ui/Spinner";
 
 type MenuItem = {
   id: number;
@@ -13,7 +14,8 @@ type MenuItem = {
   price: number;
   image?: string;
   category: string;
-  chefChoice: boolean;
+  chef_choice: boolean;
+  featured: boolean;
   cuisine?: string;
 };
 
@@ -23,6 +25,8 @@ export default function AdminMenuPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
 
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -34,6 +38,7 @@ export default function AdminMenuPage() {
   const [image, setImage] = useState("");
   const [category, setCategory] = useState(categories[1]); // Default to first real category
   const [chefChoice, setChefChoice] = useState(false);
+  const [featured, setFeatured] = useState(false);
   const [cuisine, setCuisine] = useState(""); // new cuisine field
   const [imageFile, setImageFile] = useState<File | null>(null); // new state for uploaded file
 
@@ -84,6 +89,7 @@ export default function AdminMenuPage() {
     setImage("");
     setCategory(categories[1]);
     setChefChoice(false);
+    setFeatured(false);
     setCuisine(""); // reset cuisine when opening add form
     setImageFile(null); // reset image file
     setShowForm(true);
@@ -96,7 +102,8 @@ export default function AdminMenuPage() {
     setPrice(item.price.toString());
     setImage(item.image || "");
     setCategory(item.category);
-    setChefChoice(item.chefChoice);
+    setChefChoice(item.chef_choice);
+    setFeatured(item.featured);
     setCuisine(item.cuisine || ""); // set cuisine for editing
     setImageFile(null); // reset image file on edit open
     setShowForm(true);
@@ -145,7 +152,7 @@ async function handleSubmit(e: React.FormEvent) {
     price: Number(price),
     image: imageUrl?.trim() || "",
     category: category.trim(),
-    chefChoice,
+    chef_choice: chefChoice,
     cuisine: cuisine?.trim() || "",
   };
 
@@ -178,23 +185,28 @@ async function handleSubmit(e: React.FormEvent) {
 }
 
 
-  async function handleDelete(id: number) {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+  
+async function handleDelete(id: number) {
+  if (!confirm("Are you sure you want to delete this item?")) return;
 
-    try {
-      const res = await fetch(`/api/menu/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete menu item");
-      fetchMenu();
-    } catch (err: any) {
-      alert(err.message || "Error deleting item");
-    }
+  setDeletingId(id); // start loading
+  try {
+    const res = await fetch(`/api/menu/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete menu item");
+    fetchMenu(); // refresh the menu list
+  } catch (err: any) {
+    alert(err.message || "Error deleting item");
+  } finally {
+    setDeletingId(null); // stop loading
   }
+}
+
 
   // Filtered items based on filters
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory =
       filterCategory === "All Categories" || item.category === filterCategory;
-    const matchesChefChoice = !filterChefChoice || item.chefChoice === filterChefChoice;
+    const matchesChefChoice = !filterChefChoice || item.chef_choice === filterChefChoice;
     const matchesName =
       item.name.toLowerCase().includes(searchName.trim().toLowerCase());
 
@@ -203,11 +215,11 @@ async function handleSubmit(e: React.FormEvent) {
 
   return (
     <main className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Admin: Manage Menu Items</h1>
+      <h1 className="!text-3xl font-bold mb-6">Manage Menu Items</h1>
 
       <button
         onClick={openAddForm}
-        className="mb-6 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+        className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer"
       >
         + Add New Menu Item
       </button>
@@ -219,7 +231,7 @@ async function handleSubmit(e: React.FormEvent) {
           <button
             type="button"
             onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-            className="px-5 py-2 rounded-full bg-white font-semibold shadow-md flex items-center gap-2"
+            className="px-5 py-2 rounded-full bg-white font-semibold shadow-md flex items-center gap-2 cursor-pointer"
           >
             {filterCategory}
             <svg
@@ -260,7 +272,7 @@ async function handleSubmit(e: React.FormEvent) {
         {/* Chef's Choice toggle */}
         <button
           onClick={() => setFilterChefChoice(!filterChefChoice)}
-          className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 ${
+          className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 cursor-pointer ${
             filterChefChoice
               ? "bg-[#B3905E] text-white"
               : "bg-white hover:bg-[#B3905E] hover:text-white"
@@ -279,7 +291,7 @@ async function handleSubmit(e: React.FormEvent) {
         />
       </FilteringBar>
 
-      {loading && <p>Loading menu items...</p>}
+      {loading && <Spinner name="menu items" />}
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
       <div className="mb-10 max-h-[60vh] overflow-y-auto pr-2.5">
@@ -312,19 +324,26 @@ async function handleSubmit(e: React.FormEvent) {
                 )}
               </div>
 
-              <h3 className="text-xl font-semibold text-[#B3905E]">{item.name}</h3>
-              <p className="text-gray-700 mt-1 flex-grow">{item.description}</p>
+              <h3 className="font-semibold">{item.name}</h3>
+              <p className="!text-gray-700 mt-1 flex-grow">{item.description}</p>
               {item.cuisine && (
                 <p className="text-sm italic text-[#7b3f00] mt-1">Cuisine: {item.cuisine}</p>
               )}
 
-              {item.chefChoice && (
-                <span className="inline-block bg-[#B3905E] text-white px-3 py-1 rounded-full text-xs font-semibold drop-shadow-lg mt-3 self-start">
-                  Chef's Choice
-                </span>
-              )}
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {item.chef_choice && (
+                  <span className="inline-block bg-[#B3905E] text-white px-3 py-1 rounded-full text-xs font-semibold drop-shadow-lg">
+                    Chef's Choice
+                  </span>
+                )}
+                {item.featured && (
+                  <span className="inline-block bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-semibold drop-shadow-lg">
+                    Featured Menu
+                  </span>
+                )}
+              </div>
 
-              <div className="flex justify-between items-center mt-6">
+              <div className="flex justify-between items-center mt-6 flex-wrap gap-2">
                 <span className="text-lg font-semibold text-charcoal">
                   ${item.price.toFixed(2)}
                 </span>
@@ -338,9 +357,10 @@ async function handleSubmit(e: React.FormEvent) {
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer"
+                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer disabled:opacity-50"
+                    disabled={deletingId === item.id} // disable while deleting
                   >
-                    Delete
+                    {deletingId === item.id ? "Deleting…" : "Delete"}
                   </button>
                 </div>
               </div>
@@ -360,7 +380,7 @@ async function handleSubmit(e: React.FormEvent) {
                  transition-transform duration-300 ease-in-out
                  hover:scale-[1.02]"
           >
-            <h2 className="text-3xl font-extrabold mb-8 text-[#B3905E] tracking-wide">
+            <h2 className="!text-3xl font-extrabold mb-8 text-[#B3905E] tracking-wide">
               {editingItem ? "Edit Menu Item" : "Add New Menu Item"}
             </h2>
 
@@ -424,13 +444,52 @@ async function handleSubmit(e: React.FormEvent) {
             </label>
 
             <label className="flex items-center mb-6 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={chefChoice}
-                onChange={(e) => setChefChoice(e.target.checked)}
-                className="mr-3 w-5 h-5 rounded focus:ring-2 focus:ring-[#B3905E]/60 transition"
-              />
-              Chef's Choice
+              <div className="flex gap-8 mb-6">
+                {/* Chef's Choice toggle */}
+                <label className="flex items-center cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={chefChoice}
+                    onChange={(e) => setChefChoice(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                      chefChoice ? "bg-[#B3905E]" : ""
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                        chefChoice ? "translate-x-6" : ""
+                      }`}
+                    />
+                  </div>
+                  <span className="ml-3 font-semibold text-gray-900">Chef's Choice</span>
+                </label>
+
+                {/* Featured Menu toggle */}
+                <label className="flex items-center cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={featured}
+                    onChange={(e) => setFeatured(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                      featured ? "bg-[#f59e0b]" : ""
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                        featured ? "translate-x-6" : ""
+                      }`}
+                    />
+                  </div>
+                  <span className="ml-3 font-semibold text-gray-900">Featured Menu</span>
+                </label>
+              </div>
+
             </label>
 
             {/* Enhanced Image Upload Field */}
@@ -452,14 +511,14 @@ async function handleSubmit(e: React.FormEvent) {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-6 py-3 rounded-xl bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold transition"
+                className="px-6 py-3 rounded-xl bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold transition cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-[#B3905E] hover:bg-[#a37847] text-white font-semibold transition"
+                className="px-6 py-3 rounded-xl bg-[#B3905E] hover:bg-[#a37847] text-white font-semibold transition cursor-pointer"
               >
                 {editingItem ? "Save Changes" : "Add Item"}
               </button>

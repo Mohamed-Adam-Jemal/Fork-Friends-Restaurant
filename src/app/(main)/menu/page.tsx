@@ -11,7 +11,7 @@ import Spinner from "@/components/ui/Spinner";
 import { MdPedalBike } from "react-icons/md";
 
 
-const categories = ["Appetizers", "Main Dishes", "Sides", "Desserts"];
+const categories = ["Appetizers", "Salads","Main Dishes", "Sides", "Desserts", "Drinks", "Specials"];
 const cuisines = ["Italian", "Turkish", "French", "Japanese", "Mexican"];
 
 export default function MenuPage() {
@@ -32,9 +32,9 @@ export default function MenuPage() {
 
   const priceRanges = [
     { label: "Under $8", min: 0, max: 8 },
-    { label: "$8 - $12", min: 8, max: 12 },
-    { label: "$12 - $16", min: 12, max: 16 },
-    { label: "Above $16", min: 16, max: Infinity },
+    { label: "$8 - $16", min: 8, max: 16 },
+    { label: "$16 - $25", min: 16, max: 25 },
+    { label: "Above $25", min: 25, max: Infinity },
   ];
 
   useEffect(() => {
@@ -114,11 +114,11 @@ const filteredItems = Array.isArray(menuItems)
     <PageTransition>
       <main className="py-16 relative">
       {/* Background image */}
-      <div
-        className="absolute inset-0 bg-contain z-0"
-        style={{ backgroundImage: 'url(/images/bg-menu12.png)' }}
+      {/* <div
+        className="absolute inset-0 bg-contain z-0 bg-y-repeat"
+        style={{ backgroundImage: 'url(/images/bg-menu13.png)' }}
         aria-hidden="true"
-      ></div>
+      ></div> */}
 
       {/* Black overlay */}
       {/* <div className="absolute inset-0 bg-black opacity-50 z-0" aria-hidden="true"></div> */}
@@ -220,7 +220,7 @@ const filteredItems = Array.isArray(menuItems)
             filteredCategories.map((category) => {
               const items = getItemsByCategory(category);
               return (
-                <section key={category} className="mb-16 scroll-mt-24">
+                <section key={category} className="mb-16 scroll-mt-24" id={category}>
                   <div className="flex items-center justify-center mb-6">
                     <hr className="border-t border-gold w-1/5" />
                     <span className="mx-4 text-xl font-semibold uppercase tracking-wide">

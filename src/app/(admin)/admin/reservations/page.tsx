@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import FilteringBar from "@/components/ui/FilteringBar";
+import Button from "@/components/ui/Button";
 
 type Reservation = {
   id: number;
@@ -95,7 +96,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold text-[#B3905E] mb-8">Reservations Dashboard</h1>
+      <h1 className="!text-3xl font-bold mb-8">Manage Reservations</h1>
 
 {/* Filter bar */}
 <FilteringBar>
@@ -115,7 +116,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
     <button
       type="button"
       onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
-      className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between text-black"
+      className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between text-black cursor-pointer hover:bg-[#B3905E]/50 hover:text-white transition font-semibold"
     >
       {viewTime || 'All Times'}
       <svg
@@ -156,12 +157,13 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
 
   {/* Refresh Button */}
   <div className="flex items-end">
-    <button
+    <Button
       onClick={fetchReservations}
-      className="px-6 py-2 rounded-full bg-[#B3905E] text-white shadow-md hover:bg-[#a28054] transition font-semibold"
+      variant="secondary"
+      className="!rounded-full"
     >
       Refresh
-    </button>
+    </Button>
   </div>
 </FilteringBar>
 
@@ -226,7 +228,7 @@ const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
               &times;
             </button>
 
-            <h2 className="text-2xl font-bold text-[#B3905E] mb-4">
+            <h2 className="!text-2xl font-bold text-[#B3905E] mb-4">
               Reservation Details
             </h2>
 

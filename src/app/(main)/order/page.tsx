@@ -78,10 +78,10 @@ export default function OrderPage() {
 
   if (orderPlaced) {
     return (
-      <div className="max-w-md mx-auto mt-30 mb-13 p-8 bg-green-50 rounded-lg shadow-lg text-center">
-        <h1 className="text-3xl font-bold mb-4 text-green-700">Thank you for your order!</h1>
-        <p className="text-green-700 mb-2">Your order has been placed successfully.</p>
-        <p className="text-green-600">You will be redirected to the home page shortly.</p>
+      <div className="max-w-md mx-auto mt-30 mb-13 p-8 bg-white rounded-lg shadow-lg text-center">
+        <h1 className="!text-2xl font-bold mb-4 !text-green-700">Thank you for your order!</h1>
+        <p className=" mb-2">Your order has been placed successfully.</p>
+        <p className="">You will be redirected to the home page shortly.</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export default function OrderPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-md mx-auto mt-30 mb-13 p-8 bg-white rounded-lg shadow text-center">
-        <h1 className="!text-3xl font-bold mb-6">Your cart is empty.</h1>
+        <h1 className="!text-xl font-bold mb-6">Your cart is empty.</h1>
         <Button asChild variant="primary" onClick={() => router.push("/menu")}>
           Order from menu
         </Button>
@@ -99,7 +99,7 @@ export default function OrderPage() {
 
   return (
     <main className="max-w-4xl mx-auto mt-25 p-8 bg-white rounded-lg shadow-lg mb-12">
-      <h1 className="text-4xl font-extrabold mb-8 text-burgundy">Order Summary</h1>
+      <h1 className="!text-4xl font-extrabold mb-8 text-burgundy">Order Summary</h1>
 
       <ul className="divide-y divide-gray-200 mb-10">
         {cart.map((item) => (
@@ -112,7 +112,7 @@ export default function OrderPage() {
               className="rounded-lg object-cover"
             />
             <div className="flex-grow ml-6">
-              <h2 className="font-semibold text-lg">{item.name}</h2>
+              <h2 className="!font-semibold !text-lg">{item.name}</h2>
               <p className="text-gray-600">Quantity: {item.quantity}</p>
               <p className="text-gray-700 font-semibold">${item.price}</p>
             </div>
@@ -199,7 +199,8 @@ export default function OrderPage() {
           <p className="text-red-600 font-semibold text-center">{error}</p>
         )}
 
-        <button
+        <Button
+        variant="secondary"
           type="submit"
           disabled={loading}
           className={`
@@ -213,7 +214,7 @@ export default function OrderPage() {
           `}
         >
           {loading ? "Placing Order..." : "Place Order"}
-        </button>
+        </Button>
       </form>
     </main>
   );

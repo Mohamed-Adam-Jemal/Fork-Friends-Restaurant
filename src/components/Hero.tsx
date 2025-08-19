@@ -18,17 +18,17 @@ export default function Hero() {
           className="mx-auto mb-6 drop-shadow-lg"
           priority
         />
-        <h1 className="!text-[#B3905E] dark:text-white text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-wide">
+        <h1 className="!text-4xl !text-[#B3905E] font-extrabold mb-6">
           Fork & Friends
         </h1>
-        <p className="text-lg md:text-2xl mb-10 max-w-xl mx-auto">
+        <p className="!text-lg mb-10 max-w-xl mx-auto">
           Timeless elegance meets warm hospitality. Experience fine dining reimagined.
         </p>
         {/* Animated Down Arrow */}
       <div className="flex justify-center mt-12 animate-bounce">
-        <a href="#next-section" aria-label="Scroll down">
+        <a href="#featured-menu" aria-label="Scroll down">
           <svg
-            className="w-10 h-10 text-[#B3905E] hover:text-burgundy transition-colors duration-300"
+            className="w-12 h-12 text-[#B3905E]"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"

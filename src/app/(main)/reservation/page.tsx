@@ -22,6 +22,7 @@ export default function ReservationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [noTableModalOpen, setNoTableModalOpen] = useState(false);
   const [reservedTableNumber, setReservedTableNumber] = useState<number | null>(null);
 
   // Separate dropdown open states:
@@ -39,49 +40,52 @@ export default function ReservationPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage("");
-    setReservedTableNumber(null); // reset before new submission
+  e.preventDefault();
+  setIsSubmitting(true);
+  setErrorMessage("");
+  setReservedTableNumber(null);
 
-    try {
-      const res = await fetch("/api/reservations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          guests: parseInt(formData.guests, 10),
-        }),
-      });
+  try {
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formData,
+        guests: parseInt(formData.guests, 10),
+      }),
+    });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to submit reservation");
-      }
-
-      const data = await res.json();
-      setReservedTableNumber(data.tableNumber);  // <-- save the table number here
-      setShowConfirmation(true);
-    } catch (error: any) {
-      setErrorMessage(error.message || "Something went wrong");
-    } finally {
-      setIsSubmitting(false);
+    if (res.status === 409) {
+      // No table available
+      setNoTableModalOpen(true);
+      return;
     }
-  };
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to submit reservation");
+    }
+
+    const data = await res.json();
+    setReservedTableNumber(data.tableNumber);
+    setShowConfirmation(true);
+
+  } catch (error: any) {
+    setErrorMessage(error.message || "Something went wrong");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   if (showConfirmation) {
     return (
       <div className="min-h-screen bg-[#B3905E]/15">
         <div className="container mx-auto px-6 py-16 text-center">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-12 border border-gold/20">
-              <div className="w-20 h-20 bg-gradient-to-r from-burgundy to-burgundy/90 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h1 className="text-4xl font-bold mb-4">Reservation Confirmed!</h1>
-              <p className="text-xl  mb-6">
+              <h1 className="!text-4xl font-bold mb-4">Reservation Confirmed!</h1>
+              <p className="!text-xl  mb-6">
                 Thank you, {formData.firstName}! Your table for {formData.guests} guests has been reserved. <br />
                 <strong>Your Table Number: {reservedTableNumber}</strong>
               </p>
@@ -402,6 +406,26 @@ export default function ReservationPage() {
           </div>
         </section>
       </div>
+      {/* No Table Available Modal */}
+      {noTableModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <h2 className="!text-2xl font-bold mb-4">No Tables Available</h2>
+            <p className="mb-6">
+              Sorry, we currently have no available tables for your selected date and time.
+              Please try another time or date. <br></br> For further assistance, call us at <br></br> (111) 111-1111. Thank you for your understanding!
+            </p>
+            <Button
+              variant="primary"
+              onClick={() => setNoTableModalOpen(false)}
+              size="md"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
     </PageTransition>
   );
 }

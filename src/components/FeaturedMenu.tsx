@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { FaShoppingBasket } from "react-icons/fa";
-import Button from "@/components/ui/Button"; // update path if needed
+import Button from "@/components/ui/Button"; 
+import { useCart } from "@/context/CartContext";
+import { MdPedalBike } from "react-icons/md";
+
 
 interface MenuItem {
   id: number;
@@ -35,16 +38,27 @@ export default function FeaturedMenu() {
   }, []);
 
   const handleAddClick = (item: MenuItem) => {
-    setAddingId(item.id);
-    // simulate add action
-    setTimeout(() => setAddingId(null), 1000);
-  };
+  setAddingId(item.id);        
+  addToCart({
+    id: item.id,
+    name: item.name,
+    price: item.price.toFixed(2), 
+    image: item.image || "/placeholder.jpg",
+    description: item.description || "",
+  });
+
+  // temporary visual feedback
+  setTimeout(() => setAddingId(null), 800);
+};
+
+  
+  const { addToCart } = useCart();
 
   return (
-    <section className="bg-ivory text-charcoal max-w-7xl mx-auto px-6 mt-10 scroll-mt-24">
+    <section id="featured-menu" className="bg-ivory text-charcoal max-w-7xl mx-auto px-6 mt-10 scroll-mt-24">
       <div className="flex items-center justify-center mb-10">
         <hr className="border-t border-gold w-1/5" />
-        <span className="mx-4 text-burgundy text-2xl font-bold uppercase tracking-widest">
+        <span className="md:text-2xl mx-4 text-base font-bold uppercase tracking-widest">
           Featured Menu
         </span>
         <hr className="border-t border-gold w-1/5" />
@@ -54,7 +68,7 @@ export default function FeaturedMenu() {
         {featuredItems.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 flex flex-col hover:-translate-y-1 transform"
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 flex flex-col hover:-translate-y-1 transform z-10"
           >
             <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 group">
               <Image
@@ -72,21 +86,24 @@ export default function FeaturedMenu() {
                 </div>
               )}
             </div>
-            <h3 className="text-xl font-semibold text-burgundy">{item.name}</h3>
-            <p className="text-gray-700 mt-1 flex-grow">{item.description}</p>
+            <h3 className="!md:text-xl font-semibold">{item.name}</h3>
+            <p className="!text-gray-700 mt-1 flex-grow">{item.description}</p>
 
             <div className="flex justify-between items-center mt-6">
-              <span className="text-lg font-semibold text-charcoal">${item.price.toFixed(2)}</span>
+              <span className="!text-lg font-semibold text-charcoal">${item.price.toFixed(2)}</span>
               <Button
                 onClick={() => handleAddClick(item)}
-                variant="gold"
-                size="sm"
-                className={`bg-[#B3905E]/30 text-charcoal flex items-center gap-2 ${
-                  addingId === item.id ? "scale-95 shadow-inner" : ""
-                }`}
+                size="md"
+                className={`
+                  border border-gold/30
+                  flex items-center gap-2 px-3 py-2 text-base
+                  hover:scale-105
+                  focus:ring-burgundy/30
+                  ${addingId === item.id ? "scale-95 shadow-inner" : ""}
+                `}
               >
-                <FaShoppingBasket className="text-xs" />
-                {addingId === item.id ? "Added!" : "Add to Order"}
+                <MdPedalBike size={20} />
+                {addingId === item.id ? "Added to Cart!" : "Order"} 
               </Button>
             </div>
           </div>

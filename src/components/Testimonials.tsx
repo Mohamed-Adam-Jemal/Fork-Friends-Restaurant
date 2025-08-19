@@ -228,7 +228,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         ) : (
           <>
             <FiUpload className="h-10 w-10 mb-2" />
-            <p className="text-gray-600 text-sm">Click or drag & drop to upload an image</p>
+            <p className="text-gray-600 text-sm">Click or drag & drop to upload your photo</p>
           </>
         )}
       </div>

@@ -41,11 +41,11 @@ export default function Dropdown({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-auto">
       <button
         type="button"
         onClick={toggleDropdown}
-        className={`px-5 py-2 rounded-full bg-white text-burgundy font-semibold shadow-md flex items-center justify-between gap-2 cursor-pointer ${buttonClassName}`}
+        className={`px-5 py-2 rounded-full bg-white font-semibold shadow-md flex items-center justify-between gap-2 cursor-pointer ${buttonClassName}`}
       >
         {selected || label}
         <svg
@@ -68,7 +68,7 @@ export default function Dropdown({
       >
         <li
           onClick={() => handleSelect(null)}
-          className="px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 text-burgundy font-semibold"
+          className="px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 font-semibold"
         >
           {allLabel}
         </li>

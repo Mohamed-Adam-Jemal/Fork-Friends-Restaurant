@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { supabase } from "@/lib/supabaseClient";
+import Spinner from "@/components/ui/Spinner";
+import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -141,7 +143,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-burgundy transition"
+                className="absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-burgundy transition cursor-pointer"
               >
                 {showPassword ? (
                   <FiEyeOff className="h-6 w-6" />
@@ -152,13 +154,15 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-burgundy to-gold py-3 text-gray-900 text-lg font-semibold shadow-lg hover:from-burgundy/90 hover:to-gold/90 transition disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
-          >
-            {loading ? "Logging In..." : "Login"}
-          </button>
+          <Button variant="secondary" className="w-full" type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                Logging In...
+              </>
+            ) : (
+              "Login"
+            )}
+          </Button>
         </form>
       </div>
     </div>
