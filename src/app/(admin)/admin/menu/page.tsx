@@ -6,6 +6,9 @@ import { FiUpload } from "react-icons/fi";
 import { compressImage } from "@/utils/compressImage";
 import FilteringBar from "@/components/ui/FilteringBar";
 import Spinner from "@/components/ui/Spinner";
+import { Edit3, PlusCircle } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import SomethingWentWrong from "@/components/SomethingWentWrong";
 
 type MenuItem = {
   id: number;
@@ -26,6 +29,9 @@ export default function AdminMenuPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteMenuItemId, setDeleteMenuItemId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+
 
 
   const [showForm, setShowForm] = useState(false);
@@ -112,7 +118,7 @@ export default function AdminMenuPage() {
 async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
   setError(null);
-
+  setSaving(true);
   // validation skipped here for brevity...
 
   let imageUrl = image; // existing image URL
@@ -182,24 +188,30 @@ async function handleSubmit(e: React.FormEvent) {
   } catch (err: any) {
     setError(err.message || "Error saving menu item");
   }
+  setSaving(false);
 }
 
 
   
 async function handleDelete(id: number) {
-  if (!confirm("Are you sure you want to delete this item?")) return;
-
-  setDeletingId(id); // start loading
+  setDeletingId(id); // start loading for this item
   try {
-    const res = await fetch(`/api/menu/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete menu item");
-    fetchMenu(); // refresh the menu list
+    const res = await fetch(`/api/menu/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Failed to delete");
+
+    setMenuItems(prev => prev.filter(r => r.id !== id));
   } catch (err: any) {
-    alert(err.message || "Error deleting item");
+    console.error("Delete failed:", err);
+    setError(err?.message || "Something went wrong while deleting");
   } finally {
+    setDeleteMenuItemId(null); // close modal
     setDeletingId(null); // stop loading
   }
 }
+
 
 
   // Filtered items based on filters
@@ -215,13 +227,11 @@ async function handleDelete(id: number) {
 
   return (
     <main className="p-6 max-w-6xl mx-auto">
-      <h1 className="!text-3xl font-bold mb-6">Manage Menu Items</h1>
-
       <button
         onClick={openAddForm}
-        className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer"
+        className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2 cursor-pointer"
       >
-        + Add New Menu Item
+        <PlusCircle size={23} /> Add New Menu Item
       </button>
 
       {/* Filter bar */}
@@ -292,10 +302,10 @@ async function handleDelete(id: number) {
       </FilteringBar>
 
       {loading && <Spinner name="menu items" />}
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {error && <SomethingWentWrong message={error} onRetry={fetchMenu} />}
 
       <div className="mb-10 max-h-[60vh] overflow-y-auto pr-2.5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {filteredItems.length === 0 && !loading && (
             <p className="col-span-full text-center text-gray-500">
               No menu items match your filters.
@@ -309,14 +319,17 @@ async function handleDelete(id: number) {
             >
               <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 group">
                 {item.image ? (
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    style={{ objectFit: "cover" }}
-                    className="rounded-xl transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={item.image} // or member.image
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                      className="object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                      priority
+                    />
+                  </div>
+
                 ) : (
                   <div className="bg-gray-200 w-full h-full rounded-xl flex items-center justify-center text-gray-500">
                     No Image
@@ -351,12 +364,12 @@ async function handleDelete(id: number) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEditForm(item)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition cursor-pointer"
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition cursor-pointer flex items-center gap-1"
                   >
-                    Edit
+                    <Edit3 size={14} /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setDeleteMenuItemId(item.id)}
                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer disabled:opacity-50"
                     disabled={deletingId === item.id} // disable while deleting
                   >
@@ -454,8 +467,8 @@ async function handleDelete(id: number) {
                     className="sr-only"
                   />
                   <div
-                    className={`w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
-                      chefChoice ? "bg-[#B3905E]" : ""
+                    className={`w-12 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${
+                      chefChoice ? "bg-[#B3905E]" : "bg-gray-300"
                     }`}
                   >
                     <div
@@ -476,8 +489,8 @@ async function handleDelete(id: number) {
                     className="sr-only"
                   />
                   <div
-                    className={`w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
-                      featured ? "bg-[#f59e0b]" : ""
+                    className={`w-12 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${
+                      featured ? "bg-[#B3905E]" : "bg-gray-300"
                     }`}
                   >
                     <div
@@ -518,14 +531,34 @@ async function handleDelete(id: number) {
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-[#B3905E] hover:bg-[#a37847] text-white font-semibold transition cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-[#B3905E] hover:bg-[#a37847] text-white font-semibold transition cursor-pointer flex items-center justify-center gap-2"
+                disabled={saving} // disable while saving
               >
-                {editingItem ? "Save Changes" : "Add Item"}
+                {saving ? (
+                  <>
+                    Saving...
+                  </>
+                ) : (
+                  editingItem ? "Save Changes" : "Add Item"
+                )}
               </button>
+
             </div>
           </form>
         </div>
       )}
+      <ConfirmDialog
+        show={!!deleteMenuItemId}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this menu item? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={!!deletingId} // show loading while deleting
+        onCancel={() => setDeleteMenuItemId(null)}
+        onConfirm={() => deleteMenuItemId && handleDelete(deleteMenuItemId)}
+      />
+
+
     </main>
   );
 }

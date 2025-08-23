@@ -15,7 +15,8 @@ import {
 } from "react-icons/fa";
 
 import { supabase } from "@/lib/supabaseClient";
-import Spinner from "@/components/ui/Spinner"; // make sure Spinner exists
+import Spinner from "@/components/ui/Spinner";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <FaHome /> },
@@ -27,18 +28,21 @@ const navLinks = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // new loading state
+  const [loading, setLoading] = useState(false); 
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+
   const pathname = usePathname();
   const router = useRouter();
 
   async function handleSignOut() {
-    setLoading(true); // start loading
+    setLoading(true);
     const { error } = await supabase.auth.signOut();
-    setLoading(false); // stop loading
+    setLoading(false);
+    setLogoutConfirmOpen(false);
     if (error) {
       console.error("Error signing out:", error.message);
     } else {
-      router.push("/login"); // redirect to login
+      router.push("/login");
     }
   }
 
@@ -85,19 +89,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="mt-auto pt-10">
           <button
-            onClick={handleSignOut}
+            onClick={() => setLogoutConfirmOpen(true)}
             className="flex justify-center items-center px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm w-full cursor-pointer"
           >
-            {loading ? (
-              <Spinner name="Logging out" />
-            ) : (
-              <>
-                <FaSignOutAlt className="text-lg" />
-                Logout
-              </>
-            )}
+            <FaSignOutAlt className="text-lg mr-2" />
+            Logout
           </button>
-
 
           <p className="text-sm text-[#B3905E] text-center mt-6">
             &copy; {new Date().getFullYear()} Fork & Friends
@@ -117,6 +114,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-y-auto">
         {children}
       </main>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmDialog
+        show={logoutConfirmOpen}
+        title="Confirm Logout"
+        message={loading ? <Spinner name="Logging out..." /> : "Are you sure you want to log out?"}
+        confirmText="Logout"
+        cancelText="Cancel"
+        onCancel={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleSignOut}
+      />
     </div>
   );
 }

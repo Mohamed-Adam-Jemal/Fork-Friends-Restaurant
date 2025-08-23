@@ -71,7 +71,7 @@ export async function GET(
     }
 
     const { data, error } = await supabase
-      .from("table")
+      .from("tables")
       .select("*")
       .eq("id", tableId)
       .single();
@@ -111,7 +111,7 @@ export async function DELETE(
     }
 
     const { error } = await supabase
-      .from("table")
+      .from("tables")
       .delete()
       .eq("id", tableId);
 

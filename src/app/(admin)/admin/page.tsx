@@ -18,12 +18,12 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8 px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto">
       {/* Welcome Header */}
-      <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-100">
-        <h1 className="!text-2xl font-bold text-gray-800">
-          Welcome back, {userEmail}
-        </h1>
-        <p className="text-gray-500 mt-1">Here’s your overview for today.</p>
-      </div>
+    <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-100">
+      <h1 className="text-xl md:text-2xl font-bold text-gray-800 break-words">
+        Welcome back, {userEmail}
+      </h1>
+      <p className="text-gray-500 mt-1">Here’s your overview for today.</p>
+    </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

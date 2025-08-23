@@ -10,7 +10,7 @@ async function checkSession() {
 // GET single reservation
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     const { session, supabase } = await checkSession();
@@ -18,8 +18,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
-    const numericId = Number(id);
+    const numericId = Number(params.id);
     if (isNaN(numericId)) {
       return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
     }
@@ -47,7 +46,7 @@ export async function GET(
 // PATCH update reservation
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     const { session, supabase } = await checkSession();
@@ -55,8 +54,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
-    const numericId = Number(id);
+    const numericId = Number(params.id);
     if (isNaN(numericId)) {
       return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
     }
@@ -74,6 +72,7 @@ export async function PATCH(
     if ("specialRequests" in body) updates.special_requests = body.specialRequests;
     if ("occasion" in body) updates.occasion = body.occasion;
     if ("seating" in body) updates.seating = body.seating;
+    if ("tableId" in body) updates.table_id = Number(body.tableId); 
 
     const { data: updatedReservation, error } = await supabase
       .from("reservations")
@@ -94,7 +93,7 @@ export async function PATCH(
 // DELETE reservation
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     const { session, supabase } = await checkSession();
@@ -102,16 +101,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Await params
     const { id } = await params;
     const numericId = Number(id);
     if (isNaN(numericId)) {
       return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
     }
 
-    // Fetch reservation to get table_number
+    // Fetch reservation
     const { data: reservation, error: fetchError } = await supabase
       .from("reservations")
-      .select("table_number")
+      .select("table_id")
       .eq("id", numericId)
       .single();
 
@@ -127,18 +127,14 @@ export async function DELETE(
       .from("reservations")
       .delete()
       .eq("id", numericId);
-
     if (deleteError) throw deleteError;
 
     // Update table availability
     const { error: updateTableError } = await supabase
       .from("tables")
       .update({ availability: true })
-      .eq("table_number", reservation.table_number);
-
-    if (updateTableError) {
-      console.error("Error updating table availability:", updateTableError);
-    }
+      .eq("id", reservation.table_id);
+    if (updateTableError) console.error("Error updating table:", updateTableError);
 
     return NextResponse.json({ message: "Deleted and freed up table." });
   } catch (error) {

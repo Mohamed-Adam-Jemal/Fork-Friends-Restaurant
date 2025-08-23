@@ -45,7 +45,7 @@ export default function Dropdown({
       <button
         type="button"
         onClick={toggleDropdown}
-        className={`px-5 py-2 rounded-full bg-white font-semibold shadow-md flex items-center justify-between gap-2 cursor-pointer ${buttonClassName}`}
+        className={`px-5 py-2 rounded-full bg-white font-normal shadow-md flex items-center justify-between gap-2 cursor-pointer ${buttonClassName}`}
       >
         {selected || label}
         <svg

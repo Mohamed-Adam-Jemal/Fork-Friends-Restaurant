@@ -29,7 +29,7 @@ export default function AboutPage() {
           />
         </div>
 
-        <h1 className="!text-4xl font-extrabold mb-4">
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">
           About Fork & Friends
         </h1>
         <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6 leading-relaxed">

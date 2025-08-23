@@ -39,13 +39,14 @@ export default function ReservationPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsSubmitting(true);
   setErrorMessage("");
   setReservedTableNumber(null);
 
   try {
+    // 1️⃣ Submit reservation to your backend
     const res = await fetch("/api/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,8 +68,28 @@ export default function ReservationPage() {
     }
 
     const data = await res.json();
-    setReservedTableNumber(data.tableNumber);
+    setReservedTableNumber(data.table_id.table_number);
+    console.log("Reservation created:", data);
     setShowConfirmation(true);
+
+    // 2️⃣ Send email with reservation details
+    await fetch("/api/send-email/reservation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: formData.email, // dynamic recipient
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        date: formData.date,
+        time: formData.time,
+        guests: formData.guests,
+        seating: formData.seating,
+        occasion: formData.occasion,
+        specialRequests: formData.specialRequests,
+        tableNumber: data.table_id.table_number, // include assigned table
+      }),
+    });
 
   } catch (error: any) {
     setErrorMessage(error.message || "Something went wrong");
@@ -76,60 +97,6 @@ export default function ReservationPage() {
     setIsSubmitting(false);
   }
 };
-
-
-  if (showConfirmation) {
-    return (
-      <div className="min-h-screen bg-[#B3905E]/15">
-        <div className="container mx-auto px-6 py-16 text-center">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-12 border border-gold/20">
-              <h1 className="!text-4xl font-bold mb-4">Reservation Confirmed!</h1>
-              <p className="!text-xl  mb-6">
-                Thank you, {formData.firstName}! Your table for {formData.guests} guests has been reserved. <br />
-                <strong>Your Table Number: {reservedTableNumber}</strong>
-              </p>
-
-              <div className="bg-gold/10 rounded-lg p-6 mb-8 text-left">
-                <h3 className="font-semibold mb-3">Reservation Details:</h3>
-                <div className="space-y-2 ">
-                  <p><span className="font-medium">Date:</span> {new Date(formData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                  <p><span className="font-medium">Time:</span> {formData.time}</p>
-                  <p><span className="font-medium">Party Size:</span> {formData.guests} guests</p>
-                  <p><span className="font-medium">Contact:</span> {formData.email}</p>
-                  <p><span className="font-medium">Seating :</span> {formData.seating}</p>
-                </div>
-              </div>
-              <p className="mb-8">
-                A confirmation email has been sent to {formData.email}. We look forward to welcoming you to Fork & Friends!
-              </p>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => {
-                  setShowConfirmation(false);
-                  setFormData({
-                    firstName: "",
-                    lastName: "",
-                    email: "",
-                    phone: "",
-                    date: "",
-                    time: "",
-                    guests: "2",
-                    specialRequests: "",
-                    occasion: "",
-                    seating: ""
-                  });
-                }}
-              >
-                Make Another Reservation
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <PageTransition>
@@ -145,7 +112,7 @@ export default function ReservationPage() {
         {/* Hero Section */}
         <section className="relative pt-16 pb-10 text-center">
           <div className="container mx-auto px-6">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 !text-white">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 !text-white">
               Reserve Your Table
             </h1>
             <p className="text-xl  max-w-2xl mx-auto !text-white">
@@ -425,7 +392,77 @@ export default function ReservationPage() {
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Blurred Background */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
 
-    </PageTransition>
-  );
-}
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full z-50">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl font-bold cursor-pointer"
+              onClick={() => setShowConfirmation(false)}
+            >
+              &times;
+            </button>
+
+            <h1 className="!text-3xl md:text-4xl font-bold mb-4 text-center text-[#B3905E]">
+              Reservation Successfully Made!
+            </h1>
+
+            <p className="text-center mb-6 text-neutral-800">
+              Thank you, <span className="font-semibold">{formData.firstName}</span>! Your table for <span className="font-semibold">{formData.guests} {formData.guests === "1" ? "guest" : "guests"}</span> has been reserved.
+              <br />
+              <strong className="text-[#B3905E]">Table Number: {reservedTableNumber}</strong>
+            </p>
+
+            <div className="bg-gold/10 rounded-lg p-6 mb-6 border border-gold/20 shadow-sm">
+              <h3 className="font-semibold mb-3 text-lg text-neutral-900">Reservation Details:</h3>
+              <div className="space-y-2 text-neutral-700">
+                <p><span className="font-medium font-semibold">Date:</span> {new Date(formData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><span className="font-medium font-semibold">Time:</span> {formData.time}</p>
+                <p><span className="font-medium font-semibold">Party Size:</span> {formData.guests} {formData.guests === "1" ? "guest" : "guests"}</p>
+                <p><span className="font-medium font-semibold">Contact Email:</span> {formData.email}</p>
+                <p><span className="font-medium font-semibold">Seating:</span> {formData.seating || "No preference"}</p>
+                {formData.occasion && <p><span className="font-medium font-semibold">Occasion:</span> {formData.occasion}</p>}
+                {formData.specialRequests && <p><span className="font-medium font-semibold">Special Requests:</span> {formData.specialRequests}</p>}
+              </div>
+            </div>
+
+            <p className="mb-6 text-center text-neutral-800">
+              A summary of your reservation has been sent to <span className="font-medium">{formData.email}</span> with all the details above. Please check your inbox for reference. We look forward to welcoming you!
+            </p>
+
+            <div className="text-center">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => {
+                  setShowConfirmation(false);
+                  setFormData({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phone: "",
+                    date: "",
+                    time: "",
+                    guests: "2",
+                    specialRequests: "",
+                    occasion: "",
+                    seating: ""
+                  });
+                }}
+              >
+                Make Another Reservation
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+          </PageTransition>
+        );
+      }
+      

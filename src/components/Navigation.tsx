@@ -65,7 +65,7 @@ export default function Navigation() {
           <button
             onClick={toggleMenu}
             aria-label="Toggle Menu"
-            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl text-burgundy hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95"
+            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95"
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
               <span
@@ -169,8 +169,8 @@ export default function Navigation() {
                     className={`relative block px-5 py-4 rounded-xl font-semibold text-lg transition-all duration-300 ease-out group overflow-hidden hover:scale-105 active:scale-95
                       ${
                         isActiveLink(link.href)
-                          ? "text-black bg-[#B3905E]/30 shadow-lg"
-                          : "text-charcoal hover:text-burgundy"
+                          ? "text-white bg-[#B3905E]/50 shadow-lg"
+                          : ""
                       }`}
                   >
                     {link.label}

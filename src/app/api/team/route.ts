@@ -20,10 +20,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
 
-  // Check user session for authorization
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Safe destructuring
+  const getSessionRes = await supabase.auth.getSession();
+  const session = getSessionRes.data?.session ?? null;
 
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -32,14 +31,19 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // Validate required fields
+    if (!body.name || !body.email || !body.role) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
     const { data, error } = await supabase.from('team').insert([
       {
         name: body.name,
         email: body.email,
-        phone: body.phone,
+        phone: body.phone || null,
         role: body.role,
-        quote: body.quote,
-        image: body.image,
+        quote: body.quote || null,
+        image: body.image || null,
       },
     ]);
 
@@ -48,9 +52,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to add team member' }, { status: 500 });
     }
 
-    return NextResponse.json(data, { status: 201 });
-  } catch (error) {
-    console.error('POST error:', error);
+    return NextResponse.json(data?.[0] ?? null, { status: 201 });
+  } catch (err) {
+    console.error('POST error:', err);
     return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
   }
 }

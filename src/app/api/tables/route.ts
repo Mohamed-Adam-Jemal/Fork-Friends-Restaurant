@@ -34,15 +34,17 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { number, seats, type } = body;
+    const { table_number, seats, type } = body;
 
-    if (!number || !seats || !type) {
+
+    if (!table_number || !seats || !type) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
+    
     const { data, error } = await supabase.from("tables").insert([
       {
-        table_number: number,
+        table_number,
         seats,
         type,
         availability: true,

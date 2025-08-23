@@ -447,10 +447,10 @@ const Testimonial: React.FC = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 space-y-5 md:space-y-0">
             <div className="w-full md:w-2/3 lg:max-w-lg">
-              <h2 className="font-bold text-3xl md:text-[45px] leading-none mb-6">
+              <h2 className="font-bold text-2xl md:text-4xl leading-none mb-6">
                 What Our Clients Say
               </h2>
-              <p className="text-lg leading-relaxed">
+              <p className="text-base leading-relaxed">
                 Our clients' success stories speak volumes — hear directly from
                 those who've experienced real growth and transformation working
                 with us.

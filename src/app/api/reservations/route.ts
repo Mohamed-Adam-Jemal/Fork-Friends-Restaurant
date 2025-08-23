@@ -8,14 +8,21 @@ export async function GET(request: Request) {
     const date = searchParams.get("date");
     const time = searchParams.get("time");
 
-    // Build filter object
-    const filters: Record<string, any> = {};
-    if (date) filters.date = date;
-    if (time) filters.time = time;
+    let query = supabase
+      .from("reservations")
+      .select(`
+        *,
+        table_id (
+          id,
+          table_number,
+          seats,
+          type,
+          availability
+        )
+      `)
+      .order("date", { ascending: true })
+      .order("time", { ascending: true });
 
-    let query = supabase.from("reservations").select("*").order("date", { ascending: true }).order("time", { ascending: true });
-
-    // Apply filters if any
     if (date) query = query.eq("date", date);
     if (time) query = query.eq("time", time);
 
@@ -51,26 +58,13 @@ export async function POST(request: Request) {
       seating,
     } = body;
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !phone ||
-      !date ||
-      !time ||
-      !guests ||
-      !seating
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields." },
-        { status: 400 }
-      );
+    if (!firstName || !lastName || !email || !phone || !date || !time || !guests || !seating) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
     const guestCount = Number(guests);
-    const parsedDate = date; // Supabase/Postgres can accept ISO string dates directly
 
-    // Find available table for requested seating, seats and availability = true
+    // Find an available table
     const { data: availableTables, error: tableError } = await supabase
       .from("tables")
       .select("*")
@@ -86,51 +80,55 @@ export async function POST(request: Request) {
     }
 
     if (!availableTables || availableTables.length === 0) {
-      return NextResponse.json(
-        { error: "No available tables for the selected seating and guests." },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: "No available tables for the selected seating and guests." }, { status: 409 });
     }
 
     const availableTable = availableTables[0];
 
-    // Create reservation with the available table
-    const { data: reservation, error: insertError } = await supabase.from("reservations").insert({
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      phone,
-      date: parsedDate,
-      time,
-      guests: guestCount,
-      special_requests: specialRequests ?? null,
-      occasion: occasion ?? null,
-      seating,
-      table_number: availableTable.table_number,
-    }).select().single();
+    const { data: reservation, error: insertError } = await supabase
+      .from("reservations")
+      .insert({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        date,
+        time,
+        guests: guestCount,
+        special_requests: specialRequests ?? null,
+        occasion: occasion ?? null,
+        seating,
+        table_id: availableTable.id,
+      })
+      .select(`
+        *,
+        table_id (
+          id,
+          table_number,
+          seats,
+          type,
+          availability
+        )
+      `)
+      .single();
 
     if (insertError) {
       console.error("Error creating reservation:", insertError);
       return NextResponse.json({ error: "Failed to create reservation." }, { status: 500 });
     }
 
-    // Update table availability to false
+    // Update table availability
     const { error: updateError } = await supabase
       .from("tables")
       .update({ availability: false })
       .eq("id", availableTable.id);
 
-    if (updateError) {
-      console.error("Error updating table availability:", updateError);
-      // We could still return success but maybe log this issue separately
-    }
+    if (updateError) console.error("Error updating table availability:", updateError);
 
     return NextResponse.json(reservation, { status: 201 });
+
   } catch (error) {
     console.error("Error creating reservation:", error);
-    return NextResponse.json(
-      { error: "Failed to create reservation." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create reservation." }, { status: 500 });
   }
 }

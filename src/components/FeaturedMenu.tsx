@@ -55,13 +55,13 @@ export default function FeaturedMenu() {
   const { addToCart } = useCart();
 
   return (
-    <section id="featured-menu" className="bg-ivory text-charcoal max-w-7xl mx-auto px-6 mt-10 scroll-mt-24">
+    <section id="featured-menu" className="bg-ivory max-w-7xl mx-auto px-6 mt-10 scroll-mt-24">
       <div className="flex items-center justify-center mb-10">
-        <hr className="border-t border-gold w-1/5" />
-        <span className="md:text-2xl mx-4 text-base font-bold uppercase tracking-widest">
+        <hr className="border-t border-gold w-1/6" />
+        <span className="text-lg sm:text-3xl mx-4 font-bold uppercase tracking-widest">
           Featured Menu
         </span>
-        <hr className="border-t border-gold w-1/5" />
+        <hr className="border-t border-gold w-1/6" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

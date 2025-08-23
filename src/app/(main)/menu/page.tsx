@@ -90,7 +90,7 @@ const filteredItems = Array.isArray(menuItems)
         if (priceNum < range.min || priceNum > range.max) return false;
       }
 
-      if (chefChoiceOnly && !item.chefChoice) return false;
+      if (chefChoiceOnly && !item.chef_choice) return false;
 
       return true;
     })
@@ -125,9 +125,10 @@ const filteredItems = Array.isArray(menuItems)
 
       {/* Content */}
       <div className="max-w-5xl mx-auto text-center px-4 relative z-10">
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-sm">
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6 drop-shadow-sm">
           Discover Our Menu
         </h1>
+
         <p className="text-lg md:text-xl max-w-2xl mx-auto mb-12">
           Crafted with passion, served with elegance — a symphony of flavors awaits you.
         </p>
@@ -223,7 +224,7 @@ const filteredItems = Array.isArray(menuItems)
                 <section key={category} className="mb-16 scroll-mt-24" id={category}>
                   <div className="flex items-center justify-center mb-6">
                     <hr className="border-t border-gold w-1/5" />
-                    <span className="mx-4 text-xl font-semibold uppercase tracking-wide">
+                    <span className="mx-4 text-lg md:text-2xl font-semibold uppercase tracking-wide">
                       {category}
                     </span>
                     <hr className="border-t border-gold w-1/5" />
@@ -235,14 +236,20 @@ const filteredItems = Array.isArray(menuItems)
                     className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 flex flex-col hover:-translate-y-1 transform"
                   >
                     <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 group">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-xl transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {item.chefChoice && (
+                     <div className="relative w-full h-full">
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                          className="object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                          priority
+                        />
+                      </div>
+
+                    </div>
+                      {item.chef_choice && (
                       <div
                         className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 font-semibold text-sm shadow-lg"
                         title="Chef's Choice"

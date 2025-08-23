@@ -21,10 +21,10 @@ export default function ReservationBanner({
 
       {/* Content */}
       <div className="relative z-10 p-10 max-w-3xl mx-auto text-white">
-        <p className="uppercase tracking-wider text-lg text-gold font-semibold mb-3">
+        <p className="uppercase tracking-wider text-base text-gold font-semibold mb-3">
           Make it a night to remember
         </p>
-        <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 drop-shadow-md !text-white">
+        <h2 className="text-3xl md:text-4xl font-extrabold leading-tight mb-4 drop-shadow-md !text-white">
           {title}
         </h2>
         <p className="text-lg md:text-xl mb-8 text-white leading-relaxed">
