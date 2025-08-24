@@ -78,7 +78,7 @@ return (
     {/* Logo */}
     <div className="mb-6 w-24 h-24 sm:w-28 sm:h-28 relative flex-shrink-0">
       <Image
-        src="/FnF_Logo.png"
+        src="/logos/FnF_Logo.png"
         alt="Fork & Friends logo"
         fill
         className="drop-shadow-lg object-contain"
