@@ -20,12 +20,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
 
-  // Get user session from cookies
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Verify the user session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (userError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -33,7 +31,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const items = Array.isArray(body) ? body : [body];
 
-    // Validate required fields for each item
+    // Validate required fields
     for (const item of items) {
       if (!item.name || !item.price || !item.category) {
         return NextResponse.json(

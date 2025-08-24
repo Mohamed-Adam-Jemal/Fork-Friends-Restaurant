@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Trash2 } from "lucide-react";
 import Button from "./ui/Button";
-import { motion } from "motion/react";
 
 interface CartPanelProps {
   isOpen: boolean;
@@ -155,7 +154,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               {cartCount === 0 ? (
                 <p className="text-center text-gray-500 mt-10">Your cart is empty.</p>
               ) : (
-                <ul className="space-y-4">
+                <ul className="space-y-4 overflow-y-auto h-full pr-2 no-scrollbar">
                   {cart.map((item) => (
                     <li
                       key={item.id}
@@ -205,27 +204,10 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               }`}
             >
               {orderPlaced && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="fixed top-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md 
-                            bg-green-50 border border-green-400 text-green-700 px-6 py-3 
-                            rounded-2xl shadow-lg flex items-center justify-between z-50"
-                >
-                  <span className="font-semibold text-sm sm:text-base">
-                    ✅ Your order has been placed successfully!
-                  </span>
-                  <button
-                    onClick={() => setOrderPlaced(false)}
-                    className="ml-4 text-green-700 hover:text-green-900"
-                  >
-                    ✖
-                  </button>
-                </motion.div>
+                <div className="absolute top-0 left-0 right-0 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2">
+                  Order placed successfully!
+                </div>
               )}
-
 
               {error && <p className="text-red-600 text-center font-medium">{error}</p>}
 

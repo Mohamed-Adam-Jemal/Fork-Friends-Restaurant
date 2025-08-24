@@ -1,137 +1,134 @@
-import { NextResponse } from "next/server";
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-async function checkSession() {
+async function getAuthenticatedUser() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return { session, supabase };
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return { user, supabase };
 }
 
-// PATCH — Update table availability (secured)
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
+//  PATCH (secured)
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await getAuthenticatedUser();
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const tableId = parseInt(params.id);
-    if (isNaN(tableId)) {
-      return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
-    }
+    const resolvedParams = await params;
+    const tableId = parseInt(resolvedParams.id);
+    if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
 
-    const body = await request.json();
-    const { availability } = body;
+    const { availability, table_number } = await req.json();
 
-    if (typeof availability !== "boolean") {
-      return NextResponse.json(
-        { error: "Invalid availability value" },
-        { status: 400 }
-      );
-    }
+    const updateData: any = { availability };
+    if (table_number !== undefined) updateData.table_number = table_number;
 
-    const { data, error } = await supabase
-      .from("table")
-      .update({ availability })
+    const { data, error } = await auth.supabase
+      .from("tables")
+      .update(updateData)
       .eq("id", tableId)
       .select()
       .single();
 
     if (error) {
       console.error("Supabase update error:", error);
-      return NextResponse.json(
-        { error: "Failed to update table" },
-        { status: 500 }
-      );
+
+      if (error.code === "23505" && error.details?.includes("table_number")) {
+        return NextResponse.json({ error: "The table number already exists." }, { status: 409 });
+      }
+
+      throw error;
     }
 
     return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error("Unexpected error (PATCH):", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ error: err.message || "Failed to update table" }, { status: 500 });
   }
 }
 
-// GET — Get a single table by ID (open)
-export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
+//  GET (secured)
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient();
-    const tableId = parseInt(params.id);
-    if (isNaN(tableId)) {
-      return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
-    }
+    const auth = await getAuthenticatedUser();
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data, error } = await supabase
+    const resolvedParams = await params;
+    const tableId = parseInt(resolvedParams.id);
+    if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
+
+    const { data, error } = await auth.supabase
       .from("tables")
       .select("*")
       .eq("id", tableId)
       .single();
 
-    if (error || !data) {
-      console.error("Supabase fetch error:", error);
-      return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404 }
-      );
-    }
+    if (error || !data) return NextResponse.json({ error: "Table not found" }, { status: 404 });
 
     return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error("Unexpected error (GET):", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ error: err.message || "Failed to fetch table" }, { status: 500 });
   }
 }
 
-// DELETE — Delete a table by ID (secured)
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
+//  DELETE (secured)
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await getAuthenticatedUser();
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const resolvedParams = await params;
+    const tableId = parseInt(resolvedParams.id);
+    if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
+
+    const { error } = await auth.supabase.from("tables").delete().eq("id", tableId);
+    if (error) throw error;
+
+    return NextResponse.json({ message: `Table ${tableId} deleted successfully` }, { status: 200 });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ error: err.message || "Failed to delete table" }, { status: 500 });
+  }
+}
+
+//  PUT (secured)
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const auth = await getAuthenticatedUser();
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const resolvedParams = await params;
+    const tableId = parseInt(resolvedParams.id);
+    if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
+
+    const body = await req.json();
+    const { table_number, seats, type, availability } = body;
+
+    if (!table_number || !seats || !type || typeof availability !== "boolean") {
+      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
     }
 
-    const tableId = parseInt(params.id);
-    if (isNaN(tableId)) {
-      return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
-    }
-
-    const { error } = await supabase
+    const { data, error } = await auth.supabase
       .from("tables")
-      .delete()
-      .eq("id", tableId);
+      .update({ table_number, seats, type, availability })
+      .eq("id", tableId)
+      .select()
+      .single();
 
     if (error) {
-      console.error("Supabase delete error:", error);
-      return NextResponse.json(
-        { error: "Failed to delete table" },
-        { status: 500 }
-      );
+      console.error("Supabase update error:", error);
+
+      if (error.code === "23505" && error.details?.includes("table_number")) {
+        return NextResponse.json({ error: "The table number already exists." }, { status: 409 });
+      }
+
+      throw error;
     }
 
-    return NextResponse.json(
-      { message: `Table ${tableId} deleted successfully` },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Unexpected error (DELETE):", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status: 200 });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ error: err.message || "Failed to update table" }, { status: 500 });
   }
 }

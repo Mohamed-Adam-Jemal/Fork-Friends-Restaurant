@@ -1,28 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-async function checkSession() {
+// Helper to securely get the authenticated user
+async function getAuthenticatedUser() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return { session, supabase };
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
 }
 
-// GET single reservation
+// Type for route context params
+interface RouteParams {
+  id: string;
+}
+
+// GET: Fetch a single reservation
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<RouteParams> }
 ): Promise<NextResponse> {
+  const params = await context.params;
+  const numericId = Number(params.id);
+  if (isNaN(numericId)) {
+    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+  }
+
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getAuthenticatedUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const numericId = Number(params.id);
-    if (isNaN(numericId)) {
-      return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
-    }
-
+    const supabase = await createClient();
     const { data: reservation, error } = await supabase
       .from("reservations")
       .select("*")
@@ -38,30 +45,29 @@ export async function GET(
 
     return NextResponse.json(reservation, { status: 200 });
   } catch (error) {
-    console.error("Error fetching reservation:", error);
-    return NextResponse.json({ error: "Failed to fetch reservation." }, { status: 500 });
+    console.error("GET reservation error:", error);
+    return NextResponse.json({ error: "Failed to fetch reservation" }, { status: 500 });
   }
 }
 
-// PATCH update reservation
+// PATCH: Update a reservation
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<RouteParams> }
 ): Promise<NextResponse> {
+  const params = await context.params;
+  const numericId = Number(params.id);
+  if (isNaN(numericId)) {
+    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+  }
+
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getAuthenticatedUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const numericId = Number(params.id);
-    if (isNaN(numericId)) {
-      return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
-    }
+    const body = await req.json();
+    const updates: Record<string, any> = {};
 
-    const body = await request.json();
-
-    const updates: any = {};
     if ("firstName" in body) updates.first_name = body.firstName;
     if ("lastName" in body) updates.last_name = body.lastName;
     if ("email" in body) updates.email = body.email;
@@ -72,8 +78,9 @@ export async function PATCH(
     if ("specialRequests" in body) updates.special_requests = body.specialRequests;
     if ("occasion" in body) updates.occasion = body.occasion;
     if ("seating" in body) updates.seating = body.seating;
-    if ("tableId" in body) updates.table_id = Number(body.tableId); 
+    if ("tableId" in body) updates.table_id = Number(body.tableId);
 
+    const supabase = await createClient();
     const { data: updatedReservation, error } = await supabase
       .from("reservations")
       .update(updates)
@@ -85,30 +92,28 @@ export async function PATCH(
 
     return NextResponse.json(updatedReservation, { status: 200 });
   } catch (error) {
-    console.error("Error updating reservation:", error);
-    return NextResponse.json({ error: "Failed to update reservation." }, { status: 500 });
+    console.error("PATCH reservation error:", error);
+    return NextResponse.json({ error: "Failed to update reservation" }, { status: 500 });
   }
 }
 
-// DELETE reservation
+// DELETE: Delete a reservation and free the table
 export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<RouteParams> }
 ): Promise<NextResponse> {
+  const params = await context.params;
+  const numericId = Number(params.id);
+  if (isNaN(numericId)) {
+    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+  }
+
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getAuthenticatedUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Await params
-    const { id } = await params;
-    const numericId = Number(id);
-    if (isNaN(numericId)) {
-      return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
-    }
+    const supabase = await createClient();
 
-    // Fetch reservation
     const { data: reservation, error: fetchError } = await supabase
       .from("reservations")
       .select("table_id")
@@ -122,23 +127,19 @@ export async function DELETE(
       throw fetchError;
     }
 
-    // Delete reservation
-    const { error: deleteError } = await supabase
-      .from("reservations")
-      .delete()
-      .eq("id", numericId);
+    const { error: deleteError } = await supabase.from("reservations").delete().eq("id", numericId);
     if (deleteError) throw deleteError;
 
-    // Update table availability
     const { error: updateTableError } = await supabase
       .from("tables")
       .update({ availability: true })
       .eq("id", reservation.table_id);
-    if (updateTableError) console.error("Error updating table:", updateTableError);
 
-    return NextResponse.json({ message: "Deleted and freed up table." });
+    if (updateTableError) console.error("Failed to update table availability:", updateTableError);
+
+    return NextResponse.json({ message: "Deleted reservation and freed table" }, { status: 200 });
   } catch (error) {
-    console.error("DELETE /api/reservations/[id] failed:", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+    console.error("DELETE reservation error:", error);
+    return NextResponse.json({ error: "Failed to delete reservation" }, { status: 500 });
   }
 }

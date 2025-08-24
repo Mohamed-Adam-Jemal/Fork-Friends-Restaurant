@@ -12,6 +12,13 @@ import {
   FaHome,
   FaBars,
   FaTimes,
+  FaTable,
+  FaTableTennis,
+  FaTablet,
+  FaTabletAlt,
+  FaDeskpro,
+  FaDesktop,
+  FaHeadSideMask,
 } from "react-icons/fa";
 
 import { supabase } from "@/lib/supabaseClient";
@@ -24,6 +31,7 @@ const navLinks = [
   { href: "/admin/menu", label: "Menu", icon: <FaUtensils /> },
   { href: "/admin/reservations", label: "Reservations", icon: <FaCalendarAlt /> },
   { href: "/admin/orders", label: "Orders", icon: <FaClipboardList /> },
+  { href: "/admin/tables", label: "Tables", icon: <FaTable/> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -11,7 +11,7 @@ export default function Hero() {
       <div
       >
         <Image
-          src="/FnF_Logo.png"
+          src="/logos/FnF_Logo.png"
           alt="Fork & Friends logo"
           width={250}
           height={250}

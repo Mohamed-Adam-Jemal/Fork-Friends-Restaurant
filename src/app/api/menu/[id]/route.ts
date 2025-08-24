@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Helper to check session
-async function getUserSession() {
+// Helper to get authenticated user
+async function getAuthenticatedUser() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
 }
 
 // GET: Get item by ID
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getUserSession();
+  const user = await getAuthenticatedUser();
 
-  if (!session || !session.user) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -38,9 +39,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // PUT: Update an item
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getUserSession();
+  const user = await getAuthenticatedUser();
 
-  if (!session || !session.user) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -64,9 +65,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // DELETE: Delete an item
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getUserSession();
+  const user = await getAuthenticatedUser();
 
-  if (!session || !session.user) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

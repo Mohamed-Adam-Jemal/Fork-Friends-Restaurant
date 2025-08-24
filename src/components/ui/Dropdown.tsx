@@ -5,7 +5,7 @@ export interface DropdownProps {
   onToggle?: () => void;
   onSelect: (value: string | null) => void;
   options: string[];
-  allLabel?: string;
+  
   selected?: string | null;
   buttonClassName?: string;
   listClassName?: string;
@@ -15,7 +15,6 @@ export interface DropdownProps {
 export default function Dropdown({
   label = "Select an option",
   options,
-  allLabel = "Clear selection",
   onSelect,
   selected,
   isOpen: controlledIsOpen,
@@ -66,12 +65,7 @@ export default function Dropdown({
             : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
         } ${listClassName}`}
       >
-        <li
-          onClick={() => handleSelect(null)}
-          className="px-5 py-2 cursor-pointer hover:bg-[#B3905E]/15 font-semibold"
-        >
-          {allLabel}
-        </li>
+        
         {options.map((option) => (
           <li
             key={option}

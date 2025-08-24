@@ -9,7 +9,7 @@ export const Footer = () => {
         {/* Logo */}
         <a href="/" className="flex items-center gap-2">
           <img
-            src="/FnF_Logo.png"
+            src="/logos/FnF_Logo.png"
             alt="Fork & Friends logo"
             className="h-10 w-auto"
           />

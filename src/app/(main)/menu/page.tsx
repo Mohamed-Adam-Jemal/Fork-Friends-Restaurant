@@ -11,6 +11,7 @@ import Spinner from "@/components/ui/Spinner";
 import { MdPedalBike } from "react-icons/md";
 
 
+
 const categories = ["Appetizers", "Salads","Main Dishes", "Sides", "Desserts", "Drinks", "Specials"];
 const cuisines = ["Italian", "Turkish", "French", "Japanese", "Mexican"];
 
@@ -147,7 +148,6 @@ const filteredItems = Array.isArray(menuItems)
                   setIsOpen(null);
                 }}
                 options={categories}
-                allLabel="All Categories"
                 selected={selectedCategory}
               />
             </div>
@@ -163,7 +163,6 @@ const filteredItems = Array.isArray(menuItems)
                   setIsOpen(null);
                 }}
                 options={cuisines}
-                allLabel="All Cuisines"
                 selected={selectedCuisine}
               />
             </div>
@@ -179,7 +178,6 @@ const filteredItems = Array.isArray(menuItems)
                   setIsOpen(null);
                 }}
                 options={priceRanges.map((r) => r.label)}
-                allLabel="All Prices"
                 selected={priceRange}
               />
             </div>

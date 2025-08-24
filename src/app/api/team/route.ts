@@ -1,31 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+// Helper to get authenticated user
+async function getAuthenticatedUser() {
   const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from('team')
-    .select('*')
-    .order('id', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching team:', error);
-    return NextResponse.json({ error: 'Failed to fetch team members' }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
+  const { data: { user }, error } = await supabase.auth.getUser();
+  return { user, error, supabase };
 }
 
+// GET: fetch all team members (secured)
+export async function GET() {
+  const { user, error, supabase } = await getAuthenticatedUser();
+
+  // Check authentication
+  if (error || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { data, error: fetchError } = await supabase
+      .from("team")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (fetchError) {
+      console.error("Error fetching team:", fetchError);
+      return NextResponse.json({ error: "Failed to fetch team members" }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (err) {
+    console.error("GET /team error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// POST: add a new team member (secured)
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
+  const { user, error, supabase } = await getAuthenticatedUser();
 
-  // Safe destructuring
-  const getSessionRes = await supabase.auth.getSession();
-  const session = getSessionRes.data?.session ?? null;
-
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (error || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -33,10 +48,10 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!body.name || !body.email || !body.role) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const { data, error } = await supabase.from('team').insert([
+    const { data, error: insertError } = await supabase.from("team").insert([
       {
         name: body.name,
         email: body.email,
@@ -45,16 +60,16 @@ export async function POST(req: NextRequest) {
         quote: body.quote || null,
         image: body.image || null,
       },
-    ]);
+    ]).select().single();
 
-    if (error) {
-      console.error('Insert error:', error);
-      return NextResponse.json({ error: 'Failed to add team member' }, { status: 500 });
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
     }
 
-    return NextResponse.json(data?.[0] ?? null, { status: 201 });
+    return NextResponse.json(data, { status: 201 });
   } catch (err) {
-    console.error('POST error:', err);
-    return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    console.error("POST /team error:", err);
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 }

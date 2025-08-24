@@ -1,46 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+// Helper to get authenticated user and Supabase client
+async function getAuthenticatedUser() {
   const supabase = await createClient();
-  const id = Number(params.id);
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (!user) return null;
+  return { user, supabase };
+}
+
+// GET: fetch single team member by ID (open)
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const supabase = await createClient();
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
 
   if (isNaN(id)) {
-    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from('team').select('*').eq('id', id).single();
+  const { data, error } = await supabase.from("team").select("*").eq("id", id).single();
 
-  if (error) {
-    console.error('Error fetching team member:', error);
-    return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
+  if (error || !data) {
+    console.error("Error fetching team member:", error);
+    return NextResponse.json({ error: "Team member not found" }, { status: 404 });
   }
 
   return NextResponse.json(data);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createClient();
-  const id = Number(params.id);
+// PUT: update team member (secured)
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
   if (isNaN(id)) {
-    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
-  }
-
-  // Check session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
   try {
     const body = await req.json();
-
-    const { data, error } = await supabase
-      .from('team')
+    const { data, error } = await auth.supabase
+      .from("team")
       .update({
         name: body.name,
         email: body.email,
@@ -49,43 +62,42 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         quote: body.quote,
         image: body.image,
       })
-      .eq('id', id);
+      .eq("id", id)
+      .select()
+      .single();
 
     if (error) {
-      console.error('Update error:', error);
-      return NextResponse.json({ error: 'Failed to update team member' }, { status: 500 });
+      console.error("Update error:", error);
+      return NextResponse.json({ error: "Failed to update team member" }, { status: 500 });
     }
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('PUT error:', error);
-    return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+  } catch (err) {
+    console.error("PUT error:", err);
+    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createClient();
-  const id = Number(params.id);
+// DELETE: delete team member (secured)
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
   if (isNaN(id)) {
-    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
-  // Check session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { error } = await supabase.from('team').delete().eq('id', id);
+  const { error } = await auth.supabase.from("team").delete().eq("id", id);
 
   if (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json({ error: 'Failed to delete team member' }, { status: 500 });
+    console.error("Delete error:", error);
+    return NextResponse.json({ error: "Failed to delete team member" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: 'Team member deleted' });
+  return NextResponse.json({ message: "Team member deleted successfully" });
 }

@@ -524,7 +524,6 @@ const Testimonial: React.FC = () => {
                   <Dropdown
                     label="Select Rating"
                     options={["5", "4", "3", "2", "1"]}
-                    allLabel="Clear rating"
                     selected={form.rating ? form.rating.toString() : null}
                     onSelect={(value) => {
                       setForm((prev) => ({

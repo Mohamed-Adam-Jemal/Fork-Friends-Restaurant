@@ -212,7 +212,6 @@ export default function ReservationPage() {
                           }}
                           selected={formData.seating}
                           options={["Indoor", "Outdoor"]}
-                          allLabel="Clear selection"
                           buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
                           listClassName="w-full"
                         />
@@ -265,7 +264,6 @@ export default function ReservationPage() {
                             "8:30 PM",
                             "9:00 PM",
                           ]}
-                          allLabel="Clear selection"
                           buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
                           listClassName="w-full"
                         />
@@ -288,7 +286,6 @@ export default function ReservationPage() {
                           }}
                           selected={formData.guests}
                           options={[...Array(12)].map((_, i) => (i + 1).toString())}
-                          allLabel="Clear selection"
                           buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
                           listClassName="w-full"
                         />
@@ -317,7 +314,6 @@ export default function ReservationPage() {
                             "Celebration",
                             "Other",
                           ]}
-                          allLabel="Clear selection"
                           buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
                           listClassName="w-full"
                         />

@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET(request: Request) {
+// Helper to get authenticated user
+async function getAuthenticatedUser() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
+}
+
+// GET: fetch all reservations (optionally filtered by date/time)
+export async function GET(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const date = searchParams.get("date");
@@ -28,10 +40,7 @@ export async function GET(request: Request) {
 
     const { data: reservations, error } = await query;
 
-    if (error) {
-      console.error("Error fetching reservations:", error);
-      return NextResponse.json({ error: "Failed to fetch reservations." }, { status: 500 });
-    }
+    if (error) throw error;
 
     return NextResponse.json(reservations, { status: 200 });
   } catch (error) {
@@ -40,7 +49,8 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+// POST: create a new reservation
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const body = await request.json();
@@ -74,10 +84,7 @@ export async function POST(request: Request) {
       .order("seats", { ascending: true })
       .limit(1);
 
-    if (tableError) {
-      console.error("Error fetching tables:", tableError);
-      return NextResponse.json({ error: "Failed to check table availability." }, { status: 500 });
-    }
+    if (tableError) throw tableError;
 
     if (!availableTables || availableTables.length === 0) {
       return NextResponse.json({ error: "No available tables for the selected seating and guests." }, { status: 409 });
@@ -112,10 +119,7 @@ export async function POST(request: Request) {
       `)
       .single();
 
-    if (insertError) {
-      console.error("Error creating reservation:", insertError);
-      return NextResponse.json({ error: "Failed to create reservation." }, { status: 500 });
-    }
+    if (insertError) throw insertError;
 
     // Update table availability
     const { error: updateError } = await supabase

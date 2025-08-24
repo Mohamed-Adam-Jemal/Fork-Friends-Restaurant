@@ -9,6 +9,7 @@ import Spinner from "@/components/ui/Spinner";
 import { Edit3, PlusCircle } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SomethingWentWrong from "@/components/SomethingWentWrong";
+import Dropdown from "@/components/ui/Dropdown";
 
 type MenuItem = {
   id: number;
@@ -442,18 +443,15 @@ async function handleDelete(id: number) {
 
             <label className="block mb-6 font-semibold text-lg">
               Category <span className="text-red-600">*</span>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
-                required
-              >
-                {categories.slice(1).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                label="Select category"
+                options={categories.slice(1)}
+                selected={category}
+                onSelect={(value: string | null) => setCategory(value || "")}  
+                buttonClassName="mt-2 w-full border border-gray-300 rounded-xl px-4 py-3 text-left focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+                listClassName="w-full"
+              />
+
             </label>
 
             <label className="flex items-center mb-6 cursor-pointer select-none">

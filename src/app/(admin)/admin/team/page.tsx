@@ -207,7 +207,7 @@ export default function TeamPage() {
       {loading && <Spinner name="team members" />}
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 xl:grid-cols-4 gap-8 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 mt-6">
         {filteredMembers.map((member) => {
           const initials = member.name
             .split(' ')

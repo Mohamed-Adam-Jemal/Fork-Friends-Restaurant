@@ -89,7 +89,7 @@ export default function Navigation() {
           {/* Logo */}
           <div className="flex-shrink-0 mx-auto md:mx-0">
             <Image
-              src="/FnF_Logo.png"
+              src="/logos/FnF_Logo.png"
               alt="Fork & Friends logo"
               width={60}
               height={60}
@@ -102,10 +102,11 @@ export default function Navigation() {
           <div className="flex items-center space-x-3 md:hidden">
             <button
               onClick={toggleCart}
-              className="hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              aria-label="Toggle Basket"
+              className="cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
-              <FaShoppingBasket className="text-xl" />
-              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
+              <FaShoppingBasket className="text-xl" fill="white" />
+              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>
@@ -137,10 +138,10 @@ export default function Navigation() {
             <button
               onClick={toggleCart}
               aria-label="Toggle Basket"
-              className="cursor-pointer hover:bg-[#B3905E] hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl bg-white text-burgundy shadow hover:bg-gold/20 hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className="cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
-              <FaShoppingBasket className="text-xl" />
-              <span className="bg-[#B3905E]/50 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
+              <FaShoppingBasket className="text-xl" fill="white" />
+              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>
