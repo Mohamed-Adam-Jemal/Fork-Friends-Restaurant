@@ -442,7 +442,7 @@ const Testimonial: React.FC = () => {
         }
       `}</style>
 
-      <section className="ezy__testimonial light dark:bg-[#0b1727] text-zinc-900 dark:text-white relative">
+      <section className="relative">
         <div className="container relative">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 space-y-5 md:space-y-0">

@@ -73,98 +73,104 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  return (
-    <div className="md:mt-6 min-h-screen flex flex-col md:flex-row md:gap-x-50 items-center justify-center">
-      <div className="mb-8 w-20 h-20 md:w-70 md:h-70 relative md:block hidden">
-        <Image
-          src="/FnF_Logo.png"
-          alt="Fork & Friends logo"
-          fill
-          className="drop-shadow-lg object-contain"
-          priority
-        />
-      </div>
+return (
+  <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    {/* Logo */}
+    <div className="mb-6 w-24 h-24 sm:w-28 sm:h-28 relative flex-shrink-0">
+      <Image
+        src="/FnF_Logo.png"
+        alt="Fork & Friends logo"
+        fill
+        className="drop-shadow-lg object-contain"
+        priority
+      />
+    </div>
 
-      <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 sm:p-12">
-        <h1 className="!text-3xl font-extrabold text-center text-burgundy mb-8 tracking-wide drop-shadow-md">
-          Admin Login
-        </h1>
+    {/* Card */}
+    <div className="w-full max-w-sm sm:max-w-md bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-8 sm:p-10">
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 sm:mb-6 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md px-4 py-2 sm:px-5 sm:py-3 font-semibold drop-shadow-sm"
+        >
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div
-            role="alert"
-            className="mb-6 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md px-5 py-3 font-semibold drop-shadow-sm"
+      <form onSubmit={handleLogin} className="space-y-6 sm:space-y-8" noValidate>
+        {/* Email */}
+        <div>
+          <label
+            htmlFor="email"
+            className="block mb-2 text-sm font-medium text-gray-700"
           >
-            {error}
-          </div>
-        )}
+            Email Address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@example.com"
+            className="w-full rounded-xl border border-gray-300 px-4 sm:px-5 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent shadow-sm transition"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={!!error}
+            disabled={loading}
+          />
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-8" noValidate>
-          <div>
-            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
-              Email Address
-            </label>
+        {/* Password */}
+        <div>
+          <label
+            htmlFor="password"
+            className="block mb-2 text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <div className="relative flex items-center">
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
               required
-              autoComplete="email"
-              placeholder="you@example.com"
-              className="w-full rounded-xl border border-gray-300 px-5 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-3 focus:ring-gold focus:border-transparent shadow-sm transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="current-password"
+              minLength={6}
+              placeholder="••••••••"
+              className="w-full rounded-xl border border-gray-300 px-4 sm:px-5 py-3 pr-12 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent shadow-sm transition"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               aria-invalid={!!error}
               disabled={loading}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-burgundy transition"
+            >
+              {showPassword ? (
+                <FiEyeOff className="h-5 w-5 sm:h-6 sm:w-6" />
+              ) : (
+                <FiEye className="h-5 w-5 sm:h-6 sm:w-6" />
+              )}
+            </button>
           </div>
+        </div>
 
-          <div className="relative">
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div className="relative flex items-center">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                autoComplete="current-password"
-                minLength={6}
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-gray-300 px-5 py-3 pr-12 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-3 focus:ring-gold focus:border-transparent shadow-sm transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={!!error}
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-burgundy transition cursor-pointer"
-              >
-                {showPassword ? (
-                  <FiEyeOff className="h-6 w-6" />
-                ) : (
-                  <FiEye className="h-6 w-6" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <Button variant="secondary" className="w-full" type="submit" disabled={loading}>
-            {loading ? (
-              <>
-                Logging In...
-              </>
-            ) : (
-              "Login"
-            )}
-          </Button>
-        </form>
-      </div>
+        {/* Submit Button */}
+        <Button
+          variant="secondary"
+          className="w-full py-3 sm:py-4 text-base sm:text-lg rounded-xl font-semibold"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Logging In..." : "Login"}
+        </Button>
+      </form>
     </div>
-  );
+  </div>
+);
 }

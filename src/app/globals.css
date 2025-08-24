@@ -2,7 +2,6 @@
 @import "tailwindcss";
 :root {
   --background: #F3EFE7;
-  --foreground: #171717;
   --heading-font: 'Libre Baskerville', serif;
   --body-font: 'Open Sans', sans-serif;
 }

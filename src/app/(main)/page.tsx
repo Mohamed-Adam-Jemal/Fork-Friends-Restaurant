@@ -9,7 +9,7 @@ import { Particles } from '@/components/ui/particles';
 export default function HomePage() {
   return (
     <>
-      <main className="min-h-screen w-full overflow-x-hidden text-gray-800 font-sans mt-17 dark:bg-black">
+      <main className="min-h-screen w-full overflow-x-hidden text-gray-800 font-sans mt-17 bg-[#F3EFE7]">
         <Particles
                 className="fixed inset-0 z-0 pointer-events-none"
                 quantity={150}
