@@ -31,6 +31,17 @@ export default function ReservationPage() {
   const [guestsDropdownOpen, setGuestsDropdownOpen] = useState(false);
   const [occasionDropdownOpen, setOccasionDropdownOpen] = useState(false);
 
+  const [invalidFields, setInvalidFields] = useState({
+  firstName: false,
+  lastName: false,
+  email: false,
+  phone: false,
+  date: false,
+  time: false,
+  guests: false,
+  seating: false,
+});
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -44,6 +55,27 @@ export default function ReservationPage() {
   setIsSubmitting(true);
   setErrorMessage("");
   setReservedTableNumber(null);
+
+  // Check required fields
+  const newInvalidFields = {
+    firstName: !formData.firstName,
+    lastName: !formData.lastName,
+    email: !formData.email,
+    phone: !formData.phone,
+    date: !formData.date,
+    time: !formData.time,
+    guests: !formData.guests,
+    seating: !formData.seating,
+  };
+
+  setInvalidFields(newInvalidFields);
+
+  // Stop submission if any field is invalid
+  if (Object.values(newInvalidFields).some(v => v)) {
+    setIsSubmitting(false);
+    return;
+  }
+
 
   try {
     // 1️⃣ Submit reservation to your backend
@@ -136,7 +168,7 @@ export default function ReservationPage() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                          <label className="block text-base font-semibold mb-2">
                             First Name *
                           </label>
                           <input
@@ -144,13 +176,15 @@ export default function ReservationPage() {
                             name="firstName"
                             value={formData.firstName}
                             onChange={handleInputChange}
-                            required
-                            className="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300"
+                            onFocus={() => setInvalidFields(prev => ({ ...prev, firstName: false }))}
                             placeholder="John"
+                            className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                              invalidFields.firstName ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                            }`}
                           />
                         </div>
                         <div>
-                          <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                          <label className="block text-base font-semibold mb-2">
                             Last Name *
                           </label>
                           <input
@@ -158,15 +192,17 @@ export default function ReservationPage() {
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleInputChange}
-                            required
-                            className="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300"
                             placeholder="Doe"
+                            onFocus={() => setInvalidFields(prev => ({ ...prev, lastName: false }))}
+                            className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                              invalidFields.lastName ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                            }`}
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Email Address *
                         </label>
                         <input
@@ -174,14 +210,16 @@ export default function ReservationPage() {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300"
                           placeholder="john@example.com"
+                          onFocus={() => setInvalidFields(prev => ({ ...prev, email: false }))}
+                          className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                            invalidFields.email ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                          }`}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Phone Number *
                         </label>
                         <input
@@ -189,14 +227,16 @@ export default function ReservationPage() {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300"
                           placeholder="(555) 123-4567"
+                          onFocus={() => setInvalidFields(prev => ({ ...prev, phone: false }))}
+                            className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                              invalidFields.phone ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                            }`}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Seating Preference *
                         </label>
                         <Dropdown
@@ -204,15 +244,15 @@ export default function ReservationPage() {
                           isOpen={seatingDropdownOpen}
                           onToggle={() => setSeatingDropdownOpen(prev => !prev)}
                           onSelect={(value) => {
-                            setFormData(prev => ({
-                              ...prev,
-                              seating: value ?? ""
-                            }));
+                            setFormData(prev => ({ ...prev, seating: value ?? "" }));
                             setSeatingDropdownOpen(false);
+                            setInvalidFields(prev => ({ ...prev, seating: false }));
                           }}
                           selected={formData.seating}
                           options={["Indoor", "Outdoor"]}
-                          buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
+                          buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
+                            invalidFields.seating ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                          }`}
                           listClassName="w-full"
                         />
                       </div>
@@ -225,7 +265,7 @@ export default function ReservationPage() {
                       </h3>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Preferred Date *
                         </label>
                         <input
@@ -233,14 +273,16 @@ export default function ReservationPage() {
                           name="date"
                           value={formData.date}
                           onChange={handleInputChange}
-                          required
+                          onFocus={() => setInvalidFields(prev => ({ ...prev, date: false }))}
                           min={new Date().toISOString().split('T')[0]}
-                          className="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300"
+                          className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                            invalidFields.date ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                          }`}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Preferred Time *
                         </label>
                         <Dropdown
@@ -248,29 +290,21 @@ export default function ReservationPage() {
                           isOpen={timeDropdownOpen}
                           onToggle={() => setTimeDropdownOpen(prev => !prev)}
                           onSelect={(value) => {
-                            setFormData(prev => ({
-                              ...prev,
-                              time: value ?? ""
-                            }));
+                            setFormData(prev => ({ ...prev, time: value ?? "" }));
                             setTimeDropdownOpen(false);
+                            setInvalidFields(prev => ({ ...prev, time: false }));
                           }}
                           selected={formData.time}
-                          options={[
-                            "6:00 PM",
-                            "6:30 PM",
-                            "7:00 PM",
-                            "7:30 PM",
-                            "8:00 PM",
-                            "8:30 PM",
-                            "9:00 PM",
-                          ]}
-                          buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
+                          options={["6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM","9:00 PM"]}
+                          buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
+                            invalidFields.time ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                          }`}
                           listClassName="w-full"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Number of Guests *
                         </label>
                         <Dropdown
@@ -278,21 +312,21 @@ export default function ReservationPage() {
                           isOpen={guestsDropdownOpen}
                           onToggle={() => setGuestsDropdownOpen(prev => !prev)}
                           onSelect={(value) => {
-                            setFormData(prev => ({
-                              ...prev,
-                              guests: value ?? "1"
-                            }));
+                            setFormData(prev => ({ ...prev, guests: value ?? "1" }));
                             setGuestsDropdownOpen(false);
+                            setInvalidFields(prev => ({ ...prev, guests: false }));
                           }}
                           selected={formData.guests}
                           options={[...Array(12)].map((_, i) => (i + 1).toString())}
-                          buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
+                          buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
+                            invalidFields.guests ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                          }`}
                           listClassName="w-full"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                        <label className="block text-base font-semibold mb-2">
                           Special Occasion (Optional)
                         </label>
                         <Dropdown
@@ -323,7 +357,7 @@ export default function ReservationPage() {
 
                   {/* Special Requests */}
                   <div className="mb-8">
-                    <label className="block text-base font-semibold text-neutral-800 dark:text-white mb-2">
+                    <label className="block text-base font-semibold mb-2">
                       Special Requests or Dietary Requirements (Optional)
                     </label>
                     <textarea

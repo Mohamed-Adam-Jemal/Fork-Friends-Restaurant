@@ -47,12 +47,18 @@ export default function LoginPage() {
     setError("");
 
     // ✅ Validate before sending
+    if (email.length < 1) {
+      setError("Please enter your email.");
+      return;
+    }
+    
+    // ✅ Validate before sending
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password.length < 1) {
+      setError("Please enter your password.");
       return;
     }
 
@@ -74,7 +80,7 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-gray-100">
+  <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-[#F3EFE7]">
     {/* Logo */}
     <div className="mb-6 w-24 h-24 sm:w-28 sm:h-28 relative flex-shrink-0">
       <Image
@@ -87,7 +93,7 @@ return (
     </div>
 
     {/* Card */}
-    <div className="w-full max-w-sm sm:max-w-md bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-8 sm:p-10">
+    <div className="w-full max-w-sm sm:max-w-md bg-white backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-8 sm:p-10">
       {error && (
         <div
           role="alert"
@@ -102,9 +108,9 @@ return (
         <div>
           <label
             htmlFor="email"
-            className="block mb-2 text-sm font-medium text-gray-700"
+            className="block mb-2 text-base font-semibold text-gray-700"
           >
-            Email Address
+            Email
           </label>
           <input
             id="email"
@@ -125,7 +131,7 @@ return (
         <div>
           <label
             htmlFor="password"
-            className="block mb-2 text-sm font-medium text-gray-700"
+            className="block mb-2 text-base font-semibold text-gray-700"
           >
             Password
           </label>
