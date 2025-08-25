@@ -10,12 +10,7 @@ async function getAuthenticatedUser() {
 
 // GET: fetch all team members (secured)
 export async function GET() {
-  const { user, error, supabase } = await getAuthenticatedUser();
-
-  // Check authentication
-  if (error || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const supabase = await createClient();
 
   try {
     const { data, error: fetchError } = await supabase

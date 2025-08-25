@@ -15,8 +15,6 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await getAuthenticatedUser();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const supabase = await createClient();
   const resolvedParams = await params;

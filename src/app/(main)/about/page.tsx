@@ -21,7 +21,7 @@ export default function AboutPage() {
       <div className="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-10 sm:p-16 text-center">
         <div className="relative w-32 h-32 mx-auto mb-6">
           <Image
-            src="/FnF_Logo.png"
+            src="/logos/FnF_Logo.png"
             alt="Fork & Friends logo"
             fill
             className="object-contain drop-shadow-lg"
