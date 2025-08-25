@@ -7,6 +7,8 @@ import { useCart } from "@/context/CartContext";
 import { FaShoppingBasket } from "react-icons/fa";
 import Image from "next/image";
 import CartPanel from "./CartPanel";
+import { AnimatePresence, motion } from "motion/react";
+import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,25 +67,31 @@ export default function Navigation() {
           <button
             onClick={toggleMenu}
             aria-label="Toggle Menu"
-            className="hover:bg-[#B3905E] hover:text-white md:hidden relative flex items-center justify-center w-12 h-12 rounded-xl hover:bg-gradient-to-r hover:from-gold/20 hover:to-burgundy/10 transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95"
+            className="md:hidden relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-[#B3905E]/70 hover:text-white hover:scale-110 hover:shadow-lg active:scale-95"
           >
-            <div className="w-6 h-6 flex flex-col justify-center items-center">
-              <span
-                className={`block h-0.5 w-6 bg-current transition-all duration-300 ${
-                  menuOpen ? "rotate-45 translate-y-1" : "-translate-y-1"
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-6 bg-current transition-all duration-300 ${
-                  menuOpen ? "opacity-0" : "opacity-100"
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-6 bg-current transition-all duration-300 ${
-                  menuOpen ? "-rotate-45 -translate-y-1" : "translate-y-1"
-                }`}
-              />
-            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              {menuOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <FiX className="w-7 h-7" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <FiMenu className="w-7 h-7" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
 
           {/* Logo */}
@@ -154,7 +162,7 @@ export default function Navigation() {
             menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="bg-gradient-to-b from-white/98 to-white/95 backdrop-blur-sm border-t border-gold/20 shadow-lg">
+          <div className="backdrop-blur-sm border-t border-[#B3905E]">
             <ul className="space-y-1 py-2 px-1.5">
               {navLinks.map((link, index) => (
                 <li
