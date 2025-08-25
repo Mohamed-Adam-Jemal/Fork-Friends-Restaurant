@@ -91,7 +91,7 @@ const TestimonialItem: React.FC<TestimonialItemProps> = ({ item }) => {
 
   return (
     <div
-      className="bg-white shadow-lg rounded-[50px] p-6 mx-3 w-[300px] flex-shrink-0 
+      className="bg-white rounded-[50px] p-6 mx-3 w-[300px] flex-shrink-0 
         transform transition-transform duration-300 hover:scale-105 cursor-pointer"
       style={{ boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}
     >

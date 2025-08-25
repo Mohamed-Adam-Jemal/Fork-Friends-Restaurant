@@ -2,10 +2,18 @@
 
 import Image from "next/image";
 import PageTransition from "@/components/PageTransition";
+import { Particles } from '@/components/ui/particles';
 
 export default function Hero() {
   return (
     <PageTransition>
+      <Particles
+      className="fixed inset-0 z-0 pointer-events-none"
+      quantity={133}
+      ease={60}
+      color="#000000"
+      refresh
+      />
     <section className="relative flex items-center justify-center text-center overflow-hidden pb-50">
       {/* Content */}
       <div

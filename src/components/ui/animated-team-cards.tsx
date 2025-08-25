@@ -114,13 +114,13 @@ export const AnimatedTeamCards = ({
               ease: "easeInOut",
             }}
           >
-            <h3 className="text-2xl font-bold text-black dark:text-white">
+            <h3 className="text-2xl font-bold text-black">
               {testimonials[active].name}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-neutral-500">
+            <p className="text-sm text-gray-500">
               {testimonials[active].role}
             </p>
-            <motion.p className="mt-8 text-lg text-gray-500 dark:text-neutral-300">
+            <motion.p className="mt-8 text-lg text-gray-700">
               {testimonials[active].quote.split(" ").map((word, index) => (
                 <motion.span
                   key={index}
@@ -151,19 +151,19 @@ export const AnimatedTeamCards = ({
           <div className="flex items-center justify-center pt-12 md:pt-0 gap-4">
             <button
               onClick={handlePrev}
-              className="border border-[#333333] flex items-center justify-center rounded-full dark:bg-neutral-800 p-1.5 
+              className="border border-[#333333] flex items-center justify-center rounded-full p-1.5 
                         hover:scale-105 transition-transform duration-300 cursor-pointer"
               aria-label="Previous testimonial"
             >
-              <IconArrowLeft className="h-6 w-6 text-black dark:text-neutral-400" />
+              <IconArrowLeft className="h-6 w-6 text-black" />
             </button>
             <button
               onClick={handleNext}
-              className="border border-[#333333] flex items-center justify-center rounded-full dark:bg-neutral-800 p-1.5 
+              className="border border-[#333333] flex items-center justify-center rounded-full p-1.5 
                         hover:scale-105 transition-transform duration-300 cursor-pointer"
               aria-label="Next testimonial"
             >
-              <IconArrowRight className="h-6 w-6 text-black dark:text-neutral-400" />
+              <IconArrowRight className="h-6 w-6 text-black" />
             </button>
           </div>
         </div>
