@@ -18,18 +18,20 @@ export async function POST(req: NextRequest) {
       role: "user",
       parts: [
         {
-          text: `You are an assistant that ONLY answers questions related to:
-          - Restaurants & food
-          - Diet & nutrition
-          - Sports & fitness
-          - Health & wellness
+          text: `You are an assistant that focuses ONLY on the following topics:
+        - Restaurants & Food
+        - Diet & Nutrition
+        - Sports & Fitness
+        - Health & Wellness
 
-          Rules:
-          - Keep your answers short and clear (1–3 sentences max).
-          - No long paragraphs.
-          - If asked outside these topics, reply: "I'm here to help only with restaurant, diet, sport, and health topics."
+        Guidelines:
+        - Keep answers short and clear (1–3 sentences maximum).
+        - Avoid long paragraphs.
+        - If a question is outside these topics, respond with:
+          "I'm here to help only with restaurant, diet, sport, and health topics."
 
-          User: ${message}`
+        User: ${message}`
+
                   }
                 ]
               }
