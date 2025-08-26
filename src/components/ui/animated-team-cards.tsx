@@ -120,8 +120,10 @@ export const AnimatedTeamCards = ({
             <p className="text-sm text-gray-500">
               {testimonials[active].role}
             </p>
-            <motion.p className="mt-8 text-lg text-gray-700">
-              {testimonials[active].quote.split(" ").map((word, index) => (
+           <motion.p className="mt-8 text-lg text-gray-700">
+            {(testimonials[active]?.quote ?? "")
+              .split(" ")
+              .map((word, index) => (
                 <motion.span
                   key={index}
                   initial={{
@@ -144,7 +146,8 @@ export const AnimatedTeamCards = ({
                   {word}&nbsp;
                 </motion.span>
               ))}
-            </motion.p>
+          </motion.p>
+
           </motion.div>
 
           {/* Arrows container */}

@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import FilteringBar from "@/components/ui/FilteringBar";
 import Button from "@/components/ui/Button";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Dropdown from "@/components/ui/Dropdown";
 
 type Reservation = {
   id: number;
@@ -95,45 +96,18 @@ async function handleDelete(id: number) {
         </div>
 
         {/* Time dropdown */}
-        <div className="flex flex-col relative z-30">
-          <button
-            type="button"
-            onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
-            className="bg-white px-5 py-2 w-48 rounded-full shadow-md flex items-center justify-between text-black cursor-pointer hover:bg-[#B3905E]/50 hover:text-white transition font-semibold"
-          >
-            {viewTime || "All Times"}
-            <svg
-              className={`h-5 w-5 ml-2 transition-transform ${timeDropdownOpen ? "rotate-180" : "rotate-0"}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
+        <Dropdown
+          label="All Times"
+          options={["5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"]}
+          selected={viewTime}
+          onSelect={(value) => {
+            // Allow empty (all times) selection
+            setViewTime(value || "");
+          }}
+          buttonClassName="w-36 hover:bg-[#B3905E] hover:text-white transition"
+          listClassName="text-black"
+        />
 
-          <ul
-            className={`absolute w-full mt-12 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
-              timeDropdownOpen ? "max-h-96 opacity-100 scale-y-100" : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
-            }`}
-          >
-            {["", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"].map((time) => (
-              <li
-                key={time || "all"}
-                onClick={() => {
-                  setViewTime(time);
-                  setTimeDropdownOpen(false);
-                }}
-                className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 hover:text-white ${
-                  viewTime === time ? "bg-[#B3905E] text-white font-semibold" : ""
-                }`}
-              >
-                {time || "All Times"}
-              </li>
-            ))}
-          </ul>
-        </div>
 
         {/* Refresh button */}
         <div className="flex items-end">
@@ -154,7 +128,7 @@ async function handleDelete(id: number) {
         {/* Delete button */}
         <button
           onClick={() => setDeleteReservationId(res.id)}
-          className="absolute top-6 right-6 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+          className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
           title="Delete Reservation"
         >
           <Trash2 size={23} strokeWidth={1.8} />

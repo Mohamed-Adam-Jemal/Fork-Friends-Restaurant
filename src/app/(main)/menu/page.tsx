@@ -130,7 +130,7 @@ const filteredItems = Array.isArray(menuItems)
           Discover Our Menu
         </h1>
 
-        <p className="text-lg md:text-xl max-w-2xl mx-auto mb-12">
+        <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-12">
           Crafted with passion, served with elegance — a symphony of flavors awaits you.
         </p>
 
@@ -185,7 +185,7 @@ const filteredItems = Array.isArray(menuItems)
             {/* CHEF’S CHOICE TOGGLE */}
             <button
               onClick={() => setChefChoiceOnly(!chefChoiceOnly)}
-              className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 cursor-pointer ${
+              className={`px-5 py-2 rounded-full font-normal shadow transition flex items-center gap-1 cursor-pointer ${
                 chefChoiceOnly
                   ? "bg-[#B3905E] text-white"
                   : "bg-white hover:bg-[#B3905E] hover:text-white"

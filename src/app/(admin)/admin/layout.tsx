@@ -19,11 +19,16 @@ import {
   FaDeskpro,
   FaDesktop,
   FaHeadSideMask,
+  Fa500Px,
+  FaAppStoreIos,
+  FaPhoneSquare,
+  FaNotesMedical,
 } from "react-icons/fa";
 
 import { supabase } from "@/lib/supabaseClient";
 import Spinner from "@/components/ui/Spinner";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { Fa4, FaClipboardQuestion, FaCodePullRequest, FaNoteSticky, FaPersonCircleQuestion, FaPersonDotsFromLine, FaRegNoteSticky } from "react-icons/fa6";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <FaHome /> },
@@ -32,6 +37,7 @@ const navLinks = [
   { href: "/admin/reservations", label: "Reservations", icon: <FaCalendarAlt /> },
   { href: "/admin/orders", label: "Orders", icon: <FaClipboardList /> },
   { href: "/admin/tables", label: "Tables", icon: <FaTable/> },
+  { href: "/admin/contact", label: "Contact", icon: <FaNoteSticky/> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -127,11 +133,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <ConfirmDialog
         show={logoutConfirmOpen}
         title="Confirm Logout"
-        message={loading ? <Spinner name="Logging out..." /> : "Are you sure you want to log out?"}
+        message={"Are you sure you want to log out?"}
         confirmText="Logout"
         cancelText="Cancel"
         onCancel={() => setLogoutConfirmOpen(false)}
         onConfirm={handleSignOut}
+        loading={loading}
       />
     </div>
   );

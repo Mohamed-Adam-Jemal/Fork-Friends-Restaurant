@@ -26,10 +26,10 @@ export const Footer = () => {
 
         {/* Social icons */}
         <div className="flex gap-4">
-          <a href="https://instagram.com/forkandfriends" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-[#B3905E]"><FaInstagram size={20} /></a>
-          <a href="https://facebook.com/forkandfriends" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#B3905E]"><FaFacebook size={20} /></a>
-          <a href="https://twitter.com/forkandfriends" target="_blank" rel="noreferrer" aria-label="Twitter" className="hover:text-[#B3905E]"><FaTwitter size={20} /></a>
-          <a href="https://linkedin.com/company/forkandfriends" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#B3905E]"><FaLinkedin size={20} /></a>
+          <a href="https://www.upwork.com/freelancers/~01f31a868268eb189f" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-[#B3905E]"><FaInstagram size={20} /></a>
+          <a href="https://www.upwork.com/freelancers/~01f31a868268eb189f" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#B3905E]"><FaFacebook size={20} /></a>
+          <a href="https://www.upwork.com/freelancers/~01f31a868268eb189f" target="_blank" rel="noreferrer" aria-label="Twitter" className="hover:text-[#B3905E]"><FaTwitter size={20} /></a>
+          <a href="https://www.upwork.com/freelancers/~01f31a868268eb189f" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#B3905E]"><FaLinkedin size={20} /></a>
         </div>
 
         {/* Copyright */}

@@ -8,11 +8,13 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onCancel: () => void;
   onConfirm: () => void;
+  className?: string;
   loading?: boolean; // new prop to show spinner
 }
 
 export default function ConfirmDialog({
   show,
+  className= "",
   title = "Confirm Action",
   message = "Are you sure you want to proceed?",
   confirmText = "Confirm",
@@ -25,7 +27,7 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+      <div className={`bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-80 md:w-full text-center ${className}`}>
         <h3 className="text-lg font-semibold mb-4">{title}</h3>
         <p className="text-sm text-gray-600 mb-6">{message}</p>
         <div className="flex justify-center gap-4">

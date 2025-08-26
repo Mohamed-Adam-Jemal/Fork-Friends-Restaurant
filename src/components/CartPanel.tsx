@@ -188,7 +188,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               }`}
             >
               {cartCount === 0 ? (
-                <p className="text-center text-gray-500 mt-10">Your cart is empty.</p>
+                <p className="text-center text-gray-500 mt-10">Your cart is empty. <br></br>Please make an order.</p>
               ) : (
                 <ul className="space-y-4 overflow-y-auto h-full pr-2 no-scrollbar">
                   {cart.map((item) => (
@@ -255,8 +255,8 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               }`}
             >
               {orderPlaced && (
-                <div className="absolute top-0 left-0 right-0 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2">
-                  Order placed successfully!
+                <div className="absolute top-0 left-0 right-0 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2 h-38">
+                  Your order has been placed successfully! <br /> Please check your email inbox for the order summary.
                 </div>
               )}
 

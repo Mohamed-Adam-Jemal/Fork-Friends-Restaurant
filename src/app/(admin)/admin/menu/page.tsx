@@ -50,7 +50,10 @@ export default function AdminMenuPage() {
   const [imageFile, setImageFile] = useState<File | null>(null); // new state for uploaded file
 
   // Filter states
-  const [filterCategory, setFilterCategory] = useState(categories[0]);
+  const [filterCategory, setFilterCategory] = useState<string | null>(
+    categories.length > 0 ? categories[0] : null
+  );
+
   const [filterChefChoice, setFilterChefChoice] = useState(false);
   const [searchName, setSearchName] = useState("");
 
@@ -238,52 +241,18 @@ async function handleDelete(id: number) {
       {/* Filter bar */}
       <FilteringBar>
         {/* Category dropdown */}
-        <div className="relative w-auto z-30" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-            className="px-5 py-2 rounded-full bg-white font-semibold shadow-md flex items-center gap-2 cursor-pointer"
-          >
-            {filterCategory}
-            <svg
-              className={`h-5 w-5 transition-transform ${categoryDropdownOpen ? "rotate-180" : "rotate-0"}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
-
-          <ul
-            className={`absolute w-full mt-2 bg-white rounded-xl shadow-lg transition-all duration-300 overflow-hidden ${
-              categoryDropdownOpen
-                ? "max-h-96 opacity-100 scale-y-100"
-                : "max-h-0 opacity-0 scale-y-95 pointer-events-none"
-            }`}
-          >
-            {categories.map((cat) => (
-              <li
-                key={cat}
-                onClick={() => {
-                  setFilterCategory(cat);
-                  setCategoryDropdownOpen(false);
-                }}
-                className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 hover:text-white ${
-                  filterCategory === cat ? "bg-[#B3905E] text-white font-semibold" : ""
-                }`}
-              >
-                {cat}
-              </li>
-            ))}
-          </ul>
-        </div>
-
+        <Dropdown
+          label="Category"
+          options={categories}
+          selected={filterCategory}
+          onSelect={(value) => setFilterCategory(value)}
+          buttonClassName="w-45 hover:bg-[#B3905E] hover:text-white transition"
+          listClassName="z-30"
+        />
         {/* Chef's Choice toggle */}
         <button
           onClick={() => setFilterChefChoice(!filterChefChoice)}
-          className={`px-5 py-2 rounded-full font-semibold shadow transition flex items-center gap-1 cursor-pointer ${
+          className={`px-5 py-2 rounded-full shadow transition flex items-center gap-1 cursor-pointer ${
             filterChefChoice
               ? "bg-[#B3905E] text-white"
               : "bg-white hover:bg-[#B3905E] hover:text-white"

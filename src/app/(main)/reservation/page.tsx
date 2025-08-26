@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import PageTransition from "@/components/PageTransition";
 import Dropdown from "@/components/ui/Dropdown";
+import { FiX } from "react-icons/fi";
 
 export default function ReservationPage() {
   const [formData, setFormData] = useState({
@@ -144,10 +145,10 @@ export default function ReservationPage() {
         {/* Hero Section */}
         <section className="relative pt-16 pb-10 text-center">
           <div className="container mx-auto px-6">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 !text-white">
+            <h1 className="text-3xl sm:text-5xl font-bold mb-4 !text-white">
               Reserve Your Table
             </h1>
-            <p className="text-xl  max-w-2xl mx-auto !text-white">
+            <p className="text-lg sm:text-xl  max-w-2xl mx-auto !text-white">
               Join us for an unforgettable dining experience. Book your table and let us create memorable moments for you.
             </p>
           </div>
@@ -342,9 +343,8 @@ export default function ReservationPage() {
                           }}
                           selected={formData.occasion}
                           options={[
-                            "Birthday",
-                            "Anniversary",
                             "Business",
+                            "Anniversary",
                             "Celebration",
                             "Other",
                           ]}
@@ -379,7 +379,7 @@ export default function ReservationPage() {
                     <Button
                       type="submit"
                       variant="primary"
-                      size="xl"
+                      size="lg"
                       disabled={isSubmitting}
                       loading={isSubmitting}
                     >
@@ -424,7 +424,7 @@ export default function ReservationPage() {
       )}
       {/* Confirmation Modal */}
       {showConfirmation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Blurred Background */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
 
@@ -432,13 +432,13 @@ export default function ReservationPage() {
           <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full z-50">
             {/* Close Button */}
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl font-bold cursor-pointer"
+              className="absolute top-4 right-4 text-gray-500 text-2xl font-bold cursor-pointer"
               onClick={() => setShowConfirmation(false)}
             >
-              &times;
+              <FiX size="24" className="hover:text-[#B3905E]"/>
             </button>
 
-            <h1 className="!text-3xl md:text-4xl font-bold mb-4 text-center text-[#B3905E]">
+            <h1 className="!text-2xl md:text-4xl font-bold mb-4 text-center text-[#B3905E]">
               Reservation Successfully Made!
             </h1>
 

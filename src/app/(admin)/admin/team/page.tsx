@@ -6,6 +6,7 @@ import Spinner from '@/components/ui/Spinner';
 import { Edit3, PlusCircle } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SomethingWentWrong from '@/components/SomethingWentWrong';
+import Dropdown from '@/components/ui/Dropdown';
 
 type TeamMember = {
   id: number;
@@ -191,17 +192,16 @@ export default function TeamPage() {
           onChange={(e) => setFilterName(e.target.value)}
           className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
         />
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          className="bg-white px-5 py-2 w-48 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
-        >
-          {roles.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          label="Select role"
+          options={roles}
+          selected={filterRole}
+          onSelect={(value) => {
+            if (value) setFilterRole(value); // make sure not to pass null
+          }}
+          buttonClassName="w-36 hover:bg-[#B3905E] hover:text-white transition"
+          listClassName="text-black"
+        />
       </FilteringBar>
 
       {loading && <Spinner name="team members" />}

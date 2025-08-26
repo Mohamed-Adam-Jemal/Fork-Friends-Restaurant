@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SomethingWentWrong from '@/components/SomethingWentWrong';
 import Dropdown from '@/components/ui/Dropdown';
+import { FiX } from 'react-icons/fi';
 
 type Table = {
   id: number;
@@ -214,7 +215,7 @@ export default function TablesPage() {
         </div>
       ) : (
         <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
-          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
             {filteredTables.map((table) => (
               <div
                 key={table.id}
@@ -293,29 +294,16 @@ export default function TablesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
           <form
             onSubmit={handleSubmit}
-            className="bg-white bg-opacity-95 p-8 rounded-3xl shadow-2xl w-full max-w-90 max-h-[90vh] overflow-auto border border-white/40"
+            className="bg-white bg-opacity-95 p-7 rounded-3xl shadow-2xl w-full max-w-90 max-h-[90vh] overflow-auto border border-white/40"
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-[#B3905E]">
                 {editingTable ? 'Edit Table' : 'Add Table'}
               </h2>
               <button type="button" onClick={() => setShowForm(false)}>
-                <X />
+                <FiX size={24} className='hover:text-[#B3905E] transition' />
               </button>
             </div>
-
-            {/* <label className="block mb-4 font-semibold">
-              Table Number <span className="text-red-500">*</span>
-              <input
-                type="number"
-                value={formData.table_number}
-                onChange={(e) =>
-                  setFormData({ ...formData, table_number: Number(e.target.value) })
-                }
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-[#B3905E]"
-                required
-              />
-            </label> */}
 
             <label className="block mb-4 font-semibold">
               Seats <span className="text-red-500">*</span>
