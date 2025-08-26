@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { CartProvider } from "@/context/CartContext";
 import { Footer } from "@/components/Footer";
 import { ModalProvider } from "@/context/OrderModalContext";
+import ChatBot from "@/components/ChatBot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,8 @@ export default function RootLayout({
           >
             <Navigation />
             <main className="mt-12">{children}</main>
+            {/* ChatBot */}
+            <ChatBot />
             <Footer />
           </body>
         </ModalProvider>

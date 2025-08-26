@@ -32,7 +32,7 @@ export default function Button({
       focus:ring-burgundy/30
     `,
     secondary: `
-      px-6 py-2 rounded-full bg-[#B3905E] text-white shadow-md hover:bg-[#a28054] transition font-semibold
+      px-6 py-2 rounded-full bg-[#C8A983] text-white shadow-md hover:bg-[#B3905E] transition font-semibold
     `,
   };
 

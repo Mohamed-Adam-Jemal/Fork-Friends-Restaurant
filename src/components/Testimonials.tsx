@@ -7,6 +7,7 @@ import Spinner from "./ui/Spinner";
 import Button from "./ui/Button";
 import Dropdown from "./ui/Dropdown";
 import { compressImage } from "@/utils/compressImage";
+import { FaPlus } from "react-icons/fa";
 
 // Types
 interface TestimonialItemType {
@@ -456,8 +457,8 @@ const Testimonial: React.FC = () => {
                 with us.
               </p>
             </div>
-            <Button variant="secondary" onClick={openModal}>
-              + Add Review
+            <Button variant="secondary" onClick={openModal} className="flex items-center gap-2">
+              <FaPlus/> Add Review
             </Button>
           </div>
 
@@ -475,7 +476,7 @@ const Testimonial: React.FC = () => {
         {showModal && (
           <div className="modal-backdrop" onClick={closeModal}>
             <div
-              className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 max-w-lg w-full mx-4"
+              className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-2xl font-semibold mb-4 text-zinc-900 dark:text-white">

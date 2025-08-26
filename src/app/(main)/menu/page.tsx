@@ -38,6 +38,11 @@ export default function MenuPage() {
     { label: "Above $25", min: 25, max: Infinity },
   ];
 
+  const categoryOptions = ["All Categories", ...categories];
+  const cuisineOptions = ["All Cuisines", ...cuisines];
+  const priceOptions = ["All Prices", ...priceRanges.map(r => r.label)];
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -144,10 +149,10 @@ const filteredItems = Array.isArray(menuItems)
                 isOpen={isOpen === "category"}
                 onToggle={() => setIsOpen(isOpen === "category" ? null : "category")}
                 onSelect={(value) => {
-                  setSelectedCategory(value);
+                  setSelectedCategory(value === "All Categories" ? null : value);
                   setIsOpen(null);
                 }}
-                options={categories}
+                options={categoryOptions}
                 selected={selectedCategory}
               />
             </div>
@@ -159,10 +164,10 @@ const filteredItems = Array.isArray(menuItems)
                 isOpen={isOpen === "cuisine"}
                 onToggle={() => setIsOpen(isOpen === "cuisine" ? null : "cuisine")}
                 onSelect={(value) => {
-                  setSelectedCuisine(value);
+                  setSelectedCuisine(value === "All Cuisines" ? null : value);
                   setIsOpen(null);
                 }}
-                options={cuisines}
+                options={cuisineOptions}
                 selected={selectedCuisine}
               />
             </div>
@@ -174,13 +179,14 @@ const filteredItems = Array.isArray(menuItems)
                 isOpen={isOpen === "price"}
                 onToggle={() => setIsOpen(isOpen === "price" ? null : "price")}
                 onSelect={(value) => {
-                  setPriceRange(value);
+                  setPriceRange(value === "All Prices" ? null : value);
                   setIsOpen(null);
                 }}
-                options={priceRanges.map((r) => r.label)}
+                options={priceOptions}
                 selected={priceRange}
               />
             </div>
+
 
             {/* CHEF’S CHOICE TOGGLE */}
             <button

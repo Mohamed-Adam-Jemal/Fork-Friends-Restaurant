@@ -24,9 +24,6 @@ export default function HomePage() {
       <section id="testimonials" className="py-12 px-4 sm:px-8 md:px-16">
         <Testimonials />
       </section>
-
-      {/* ChatBot */}
-      <ChatBot />
     </main>
   );
 }
