@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+// GET by ID
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { id } = params;
+
+    // Extract id from the URL
+    const { searchParams } = new URL(request.url);
+    const id = request.nextUrl.pathname.split("/").pop(); // extract [id] from path
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required." }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from("contacts")
@@ -13,7 +21,6 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       .single();
 
     if (error) {
-      console.error("Supabase fetch error:", error);
       return NextResponse.json({ error: "Message not found." }, { status: 404 });
     }
 
@@ -24,10 +31,14 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+// PATCH by ID
+export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { id } = params;
+    const id = request.nextUrl.pathname.split("/").pop();
+
+    if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
+
     const updates = await request.json();
 
     const { data, error } = await supabase
@@ -37,7 +48,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       .select();
 
     if (error) {
-      console.error("Supabase update error:", error);
       return NextResponse.json({ error: "Failed to update message." }, { status: 500 });
     }
 
@@ -48,35 +58,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE by ID
+export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { id } = params;
-    const body = await request.json();
+    const id = request.nextUrl.pathname.split("/").pop();
 
-    // Replace all fields for the resource
-    const { data, error } = await supabase
-      .from("contacts")
-      .update(body)
-      .eq("id", id)
-      .select();
-
-    if (error) {
-      console.error("Supabase put error:", error);
-      return NextResponse.json({ error: "Failed to replace message." }, { status: 500 });
-    }
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Failed to replace message." }, { status: 500 });
-  }
-}
-
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const supabase = await createClient();
-    const { id } = params;
+    if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
 
     const { data, error } = await supabase
       .from("contacts")
@@ -85,7 +73,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
       .select();
 
     if (error) {
-      console.error("Supabase delete error:", error);
       return NextResponse.json({ error: "Failed to delete message." }, { status: 500 });
     }
 
