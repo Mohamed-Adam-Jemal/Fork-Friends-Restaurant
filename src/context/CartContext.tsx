@@ -7,10 +7,6 @@ type MenuItem = {
   name: string;
   price: number;
   image: string;
-  description: string;
-  category: string;
-  cuisine: string;
-  chef_choice: boolean;
 };
 
 

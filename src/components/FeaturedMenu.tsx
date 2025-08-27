@@ -38,20 +38,18 @@ export default function FeaturedMenu() {
   }, []);
 
   const handleAddClick = (item: MenuItem) => {
-  setAddingId(item.id);        
+  setAddingId(item.id);
   addToCart({
     id: item.id,
     name: item.name,
-    price: item.price.toFixed(2), 
+    price: Number(item.price.toFixed(2)),
     image: item.image || "/placeholder.jpg",
-    description: item.description || "",
   });
 
   // temporary visual feedback
   setTimeout(() => setAddingId(null), 800);
 };
 
-  
   const { addToCart } = useCart();
 
   return (

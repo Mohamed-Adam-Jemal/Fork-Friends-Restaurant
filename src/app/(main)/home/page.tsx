@@ -9,7 +9,7 @@ import Testimonials  from '@/components/Testimonials';
 export default function HomePage() {
   return (
     <>
-      <main className="min-h-screen w-full overflow-x-hidden bg-[#B3905E]/15 text-gray-800 font-sans mt-17 dark:bg-black">
+      <main className="min-h-screen w-full overflow-x-hidden bg-[#B3905E]/15 text-gray-800 font-sans mt-17">
         {/* <BackgroundLines className="absolute inset-0 pointer-events-none" /> */}
         {/* Hero Section */}
         <section className="relative z-10 h-screen pt-15 md:pt-20" style={{ height: "calc(100vh - 4.25rem)" }}>
