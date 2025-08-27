@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Team } from "@/components/Team"; // wherever you save it
+import { Team } from "@/components/Team";
 import PageTransition from "@/components/PageTransition";
 import Button from "@/components/ui/Button";
 import { Particles } from "@/components/ui/particles";
@@ -29,7 +29,7 @@ export default function AboutPage() {
           />
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">
+        <h1 className="text-2xl sm:text-4xl font-extrabold mb-3">
           About Fork & Friends
         </h1>
         <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6 leading-relaxed">
@@ -43,8 +43,8 @@ export default function AboutPage() {
           or join our events, Fork & Friends welcomes you with open arms and an open table.
         </p>
 
-        <h2 className="!text-3xl font-bold mt-12 mb-8">
-          Meet the Fork & Friends Team
+        <h2 className="text-2xl sm:text-3xl font-bold mt-12">
+          Meet the Fork <br></br>& Friends Team
         </h2>
         <Team />
 

@@ -13,22 +13,14 @@ import {
   FaBars,
   FaTimes,
   FaTable,
-  FaTableTennis,
-  FaTablet,
-  FaTabletAlt,
-  FaDeskpro,
-  FaDesktop,
-  FaHeadSideMask,
-  Fa500Px,
-  FaAppStoreIos,
-  FaPhoneSquare,
-  FaNotesMedical,
+  FaQuoteRight,
 } from "react-icons/fa";
 
 import { supabase } from "@/lib/supabaseClient";
 import Spinner from "@/components/ui/Spinner";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { Fa4, FaClipboardQuestion, FaCodePullRequest, FaNoteSticky, FaPersonCircleQuestion, FaPersonDotsFromLine, FaRegNoteSticky } from "react-icons/fa6";
+import { FaNoteSticky} from "react-icons/fa6";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: <FaHome /> },
@@ -37,6 +29,7 @@ const navLinks = [
   { href: "/admin/reservations", label: "Reservations", icon: <FaCalendarAlt /> },
   { href: "/admin/orders", label: "Orders", icon: <FaClipboardList /> },
   { href: "/admin/tables", label: "Tables", icon: <FaTable/> },
+  { href: "/admin/testimonials", label: "Testimonials", icon: <FaQuoteRight size={22}/> },
   { href: "/admin/contact", label: "Contact", icon: <FaNoteSticky/> },
 ];
 
@@ -63,20 +56,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-50 bg-[#C8AD82] text-white flex items-center justify-between px-4 py-4 shadow-lg">
-        <h2 className="!text-2xl font-extrabold tracking-wide !text-white">Admin Panel</h2>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="focus:outline-none cursor-pointer">
-          {sidebarOpen ? <FaTimes className="text-2xl" /> : <FaBars className="text-2xl" />}
-        </button>
+      <header className="md:hidden sticky top-0 z-50 bg-white text-white flex items-center justify-between px-4 py-3 shadow-md">
+        <div className="flex items-center flex-1 justify-between">
+          {/* Left: Logo */}
+          <div className="flex items-center space-x-5">
+            <Image
+              src="/logos/FnF_Logo.png"
+              alt="Fork & Friends logo"
+              width={48}
+              height={48}
+              className="drop-shadow-md rounded-full"
+              priority
+            />
+          </div>
+
+          <div className="rounded-full bg-[#C8AD82] p-3">
+            <h2 className="text-lg font-bold tracking-wide !text-white">Admin Panel</h2>
+          </div>
+
+          {/* Right: Sidebar Toggle Button */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle Sidebar"
+            className="p-2 rounded-md text-[#B3905E] transition-colors"
+          >
+            {sidebarOpen ? (
+              <FaTimes className="text-2xl" />
+            ) : (
+              <FaBars className="text-2xl" />
+            )}
+          </button>
+        </div>
       </header>
+
 
       {/* Sidebar */}
       <aside
         className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-72 bg-white text-[#B3905E] flex flex-col p-6 shadow-xl transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        <div className="hidden md:block mb-10">
-          <h2 className="!text-3xl font-extrabold tracking-wide text-center text-[#B3905E]">
+        <div className="hidden md:block mb-10 bg-[#C8AD82] rounded-full p-5">
+          <h2 className="text-xl font-extrabold tracking-wide text-center !text-white">
             Admin Panel
           </h2>
         </div>

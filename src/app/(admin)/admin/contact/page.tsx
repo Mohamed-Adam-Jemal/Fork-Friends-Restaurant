@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import FilteringBar from '@/components/ui/FilteringBar';
 import Spinner from '@/components/ui/Spinner';
-import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SomethingWentWrong from '@/components/SomethingWentWrong';
 

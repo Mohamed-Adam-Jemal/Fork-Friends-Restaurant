@@ -25,6 +25,7 @@ export default function ReservationPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [noTableModalOpen, setNoTableModalOpen] = useState(false);
   const [reservedTableNumber, setReservedTableNumber] = useState<number | null>(null);
+  const [backendReason, setBackendReason] = useState<string | null>(null);
 
   // Separate dropdown open states:
   const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
@@ -51,85 +52,123 @@ export default function ReservationPage() {
     }));
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setErrorMessage("");
-  setReservedTableNumber(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setReservedTableNumber(null);
+    setBackendReason(null);
 
-  // Check required fields
-  const newInvalidFields = {
-    firstName: !formData.firstName,
-    lastName: !formData.lastName,
-    email: !formData.email,
-    phone: !formData.phone,
-    date: !formData.date,
-    time: !formData.time,
-    guests: !formData.guests,
-    seating: !formData.seating,
-  };
+    // Validate required fields
+    const newInvalidFields = {
+      firstName: !formData.firstName,
+      lastName: !formData.lastName,
+      email: !formData.email,
+      phone: !formData.phone,
+      date: !formData.date,
+      time: !formData.time,
+      guests: !formData.guests,
+      seating: !formData.seating,
+    };
+    setInvalidFields(newInvalidFields);
 
-  setInvalidFields(newInvalidFields);
-
-  // Stop submission if any field is invalid
-  if (Object.values(newInvalidFields).some(v => v)) {
-    setIsSubmitting(false);
-    return;
-  }
-
-
-  try {
-    // 1️⃣ Submit reservation to your backend
-    const res = await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,
-        guests: parseInt(formData.guests, 10),
-      }),
-    });
-
-    if (res.status === 409) {
-      // No table available
-      setNoTableModalOpen(true);
+    if (Object.values(newInvalidFields).some(Boolean)) {
+      setIsSubmitting(false);
       return;
     }
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to submit reservation");
+    try {
+      const res = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          guests: parseInt(formData.guests, 10),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409) {
+        // No tables available — show backend reason
+        setBackendReason(data.reason || "No tables available for the selected time.");
+        setNoTableModalOpen(true);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!res.ok) {
+        // Other errors (400, 500, etc.)
+        setErrorMessage(data.error || "Something went wrong");
+        setBackendReason(data.reason || null);
+        setNoTableModalOpen(true);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success
+      setReservedTableNumber(data.table_id.table_number);
+      setShowConfirmation(true);
+
+      // Optionally, send email
+      await fetch("/api/send-email/reservation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          date: formData.date,
+          time: formData.time,
+          guests: formData.guests,
+          seating: formData.seating,
+          occasion: formData.occasion,
+          specialRequests: formData.specialRequests,
+          tableNumber: data.table_id.table_number,
+        }),
+      });
+
+    } catch (error: any) {
+      setErrorMessage(error.message || "Something went wrong");
+      setNoTableModalOpen(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+    const timeOptions = ["6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM","9:00 PM"];
+
+  const getAvailableTimes = () => {
+    if (!formData.date) return timeOptions;
+    const selectedDate = new Date(formData.date);
+    const now = new Date();
+    
+    // Only filter if the date is today
+    if (
+      selectedDate.getFullYear() === now.getFullYear() &&
+      selectedDate.getMonth() === now.getMonth() &&
+      selectedDate.getDate() === now.getDate()
+    ) {
+      return timeOptions.filter(timeStr => {
+        const [hourStr, minuteStr] = timeStr.split(/:| /);
+        const period = timeStr.includes("PM") ? "PM" : "AM";
+        let hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+
+        if (period === "PM" && hour !== 12) hour += 12;
+        if (period === "AM" && hour === 12) hour = 0;
+
+        const timeDate = new Date();
+        timeDate.setHours(hour, minute, 0, 0);
+
+        return timeDate > now;
+      });
     }
 
-    const data = await res.json();
-    setReservedTableNumber(data.table_id.table_number);
-    console.log("Reservation created:", data);
-    setShowConfirmation(true);
-
-    // 2️⃣ Send email with reservation details
-    await fetch("/api/send-email/reservation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.email, // dynamic recipient
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        date: formData.date,
-        time: formData.time,
-        guests: formData.guests,
-        seating: formData.seating,
-        occasion: formData.occasion,
-        specialRequests: formData.specialRequests,
-        tableNumber: data.table_id.table_number, // include assigned table
-      }),
-    });
-
-  } catch (error: any) {
-    setErrorMessage(error.message || "Something went wrong");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    return timeOptions;
+  };
 
   return (
     <PageTransition>
@@ -296,7 +335,7 @@ export default function ReservationPage() {
                             setInvalidFields(prev => ({ ...prev, time: false }));
                           }}
                           selected={formData.time}
-                          options={["6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM","9:00 PM"]}
+                          options={getAvailableTimes()}
                           buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
                             invalidFields.time ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
                           }`}
@@ -318,11 +357,11 @@ export default function ReservationPage() {
                             setInvalidFields(prev => ({ ...prev, guests: false }));
                           }}
                           selected={formData.guests}
-                          options={[...Array(12)].map((_, i) => (i + 1).toString())}
+                          options={["1","2","3","4","5","6","7","8","9","10"]}
                           buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
                             invalidFields.guests ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
                           }`}
-                          listClassName="w-full"
+                          listClassName="w-full !max-h-110"
                         />
                       </div>
 
@@ -392,7 +431,7 @@ export default function ReservationPage() {
                     <h4 className="font-semibold mb-2">Please Note:</h4>
                     <ul className="text-sm  space-y-1">
                       <li>• Reservations are held for 15 minutes past the reserved time</li>
-                      <li>• For parties of 8 or more, please call us directly at (555) 123-4567</li>
+                      <li>• For reservations of more than 10 guests, please call us directly at (555) 123-4567</li>
                       <li>• Cancellations must be made at least 2 hours in advance</li>
                       <li>• We accommodate dietary restrictions with advance notice</li>
                     </ul>
@@ -406,15 +445,17 @@ export default function ReservationPage() {
       {/* No Table Available Modal */}
       {noTableModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <h2 className="!text-2xl font-bold mb-4">No Tables Available</h2>
+          <div className="bg-white rounded-xl p-8 max-w-sm w-[90%] sm:w-full text-center shadow-2xl">
+            <h2 className="text-2xl font-bold mb-4">No Tables Available</h2>
             <p className="mb-6">
-              Sorry, we currently have no available tables for your selected date and time.
-              Please try another time or date. <br></br> For further assistance, call us at <br></br> (111) 111-1111. Thank you for your understanding!
+              {backendReason || "Sorry, we currently have no available tables for your selected date and time."}
             </p>
             <Button
               variant="primary"
-              onClick={() => setNoTableModalOpen(false)}
+              onClick={() => {
+                setNoTableModalOpen(false);
+                setBackendReason(null); // reset for next attempt
+              }}
               size="md"
             >
               Close
@@ -422,6 +463,7 @@ export default function ReservationPage() {
           </div>
         </div>
       )}
+
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

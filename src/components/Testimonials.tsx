@@ -75,7 +75,7 @@ const Rating: React.FC<RatingProps> = ({
           );
         } else {
           return (
-            <FontAwesomeIcon key={i} icon={faStar} className="text-white" />
+            <FontAwesomeIcon key={i} icon={faStar} className="text-gray-300 fill-white stroke-gray-300" />
           );
         }
       })}
