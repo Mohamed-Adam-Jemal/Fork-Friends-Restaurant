@@ -420,6 +420,19 @@ const Testimonial: React.FC = () => {
           width: calc(2 * 100%);
           animation: scroll-right 30s linear infinite;
         }
+
+        @media (max-width: 1024px) {
+          .scroll-container {
+            animation-duration: 20s; /* faster on tablets */
+          }
+        }
+
+        @media (max-width: 768px) {
+          .scroll-container {
+            animation-duration: 12s; /* even faster on mobile */
+          }
+        }
+
         .scroll-container:hover {
           animation-play-state: paused;
         }

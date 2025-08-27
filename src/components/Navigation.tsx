@@ -11,15 +11,17 @@ import { AnimatePresence, motion } from "motion/react";
 import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navigation() {
-  const basketRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
   const pathname = usePathname();
+  const [shake, setShake] = useState(false);
 
   const { cartCount } = useCart();
+  const showNavbar = () => setVisible(true);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +58,17 @@ export default function Navigation() {
     { href: "/#testimonials", label: "Testimonials" },
     { href: "/about", label: "About" },
   ];
+
+// When cartCount changes
+useEffect(() => {
+  if (cartCount > 0) {
+    showNavbar();       // make navbar visible again
+    setShake(true);     // trigger shake
+
+    const timer = setTimeout(() => setShake(false), 500); // reset after animation
+    return () => clearTimeout(timer);
+  }
+}, [cartCount]);
 
   return (
     <>
@@ -110,10 +123,10 @@ export default function Navigation() {
           {/* Mobile Cart */}
           <div className="flex items-center space-x-3 md:hidden">
             <button
-              ref={basketRef}
               onClick={toggleCart}
               aria-label="Toggle Basket"
-              className="cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className={`cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95
+              ${shake ? "animate-shake" : ""}`}
             >
               <FaShoppingBasket className="text-xl" fill="white" />
               <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
@@ -129,11 +142,11 @@ export default function Navigation() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`relative px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-300 ease-out overflow-hidden
+                    className={`relative px-5 py-3 rounded-full font-semibold text-lg transition-all duration-300 ease-out overflow-hidden
                     ${
                       isActiveLink(link.href)
-                        ? "text-white bg-[#B3905E]/70 shadow-lg transform scale-105"
-                        : "text-charcoal hover:text-[#B3905E]/70"
+                        ? "text-white bg-[#C8A983] shadow-lg transform scale-105"
+                        : "hover:text-[#C8A983]"
                     }`}
                   >
                     {link.label}
@@ -148,10 +161,11 @@ export default function Navigation() {
             <button
               onClick={toggleCart}
               aria-label="Toggle Basket"
-              className="cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className={`cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95
+              ${shake ? "animate-shake" : ""}`}
             >
               <FaShoppingBasket className="text-xl" fill="white" />
-              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
+              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>
