@@ -37,3 +37,13 @@ h4 {
 p {
   font-family: 'Open Sans', sans-serif ;
 }
+
+.animate-basket {
+  animation: basketBounce 0.5s ease-in-out;
+}
+
+@keyframes basketBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+

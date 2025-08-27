@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navigation() {
+  const basketRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -109,12 +110,13 @@ export default function Navigation() {
           {/* Mobile Cart */}
           <div className="flex items-center space-x-3 md:hidden">
             <button
+              ref={basketRef}
               onClick={toggleCart}
               aria-label="Toggle Basket"
               className="cursor-pointer hover:bg-[#B3905E] bg-[#B3905E]/70 hover:text-white relative group w-11 h-11 flex items-center justify-center rounded-xl shadow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
               <FaShoppingBasket className="text-xl" fill="white" />
-              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs bg-burgundy text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
+              <span className="bg-[#000000]/40 text-white absolute -top-1 -right-1 text-xs text-black w-5 h-5 rounded-full flex items-center justify-center font-semibold shadow-md group-hover:scale-110 transition-transform">
                 {cartCount}
               </span>
             </button>

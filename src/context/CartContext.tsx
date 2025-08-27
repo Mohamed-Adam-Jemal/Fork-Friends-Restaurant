@@ -1,14 +1,18 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useMemo } from "react";
+import { createContext, useContext, useState, ReactNode, useMemo, useRef } from "react";
 
 type MenuItem = {
   id: number;
   name: string;
-  price: string;
+  price: number;
   image: string;
   description: string;
+  category: string;
+  cuisine: string;
+  chef_choice: boolean;
 };
+
 
 type CartItem = MenuItem & {
   quantity: number;
@@ -22,6 +26,7 @@ type CartContextType = {
   increaseQuantity: (id: number) => void;
   decreaseQuantity: (id: number) => void;
   clearCart: () => void;
+  basketRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -36,6 +41,7 @@ export const useCart = () => {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const basketRef = useRef<HTMLButtonElement>(null);
 
   const addToCart = (item: MenuItem) => {
     setCart((prev) => {
@@ -88,7 +94,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, cartCount, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart }}
+      value={{ cart, cartCount, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, basketRef  }}
     >
       {children}
     </CartContext.Provider>
