@@ -71,7 +71,7 @@ export default function Dropdown({
             key={option}
             onClick={() => handleSelect(option)}
             className={`px-5 py-2 cursor-pointer hover:bg-[#B3905E]/50 text-burgundy hover:text-white ${
-              selected === option ? "bg-[#B3905E] text-white font-semibold" : ""
+              selected === option ? "bg-[#C8A983] text-white font-semibold" : ""
             }`}
           >
             {option}

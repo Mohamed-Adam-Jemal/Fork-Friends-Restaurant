@@ -336,7 +336,7 @@ const Testimonial: React.FC = () => {
           const formData = new FormData();
           formData.append("file", imageFile);
 
-          const uploadRes = await fetch("/api/upload-image/testimonials-users-images/route", {
+          const uploadRes = await fetch("/api/upload-image/testimonials-users-images", {
             method: "POST",
             body: formData,
           });
@@ -555,21 +555,21 @@ const Testimonial: React.FC = () => {
 
                 {/* Form Actions */}
                 <div className="flex justify-end space-x-3 mt-6">
-                  <button
+                  <Button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 dark:text-white dark:border-slate-600 dark:hover:bg-slate-700 cursor-pointer"
+                    variant="third"
                     disabled={submitLoading}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
-                    className="bg-[#B3905E] hover:bg-[#9f7a38] text-white font-semibold px-4 py-2 rounded cursor-pointer transition"
                     disabled={submitLoading}
+                    variant="secondary"
                   >
                     {submitLoading ? "Submitting..." : "Submit Review"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>

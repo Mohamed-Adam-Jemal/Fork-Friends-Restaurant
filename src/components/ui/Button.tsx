@@ -5,7 +5,7 @@ import React from "react";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "third";
   size?: "sm" | "md" | "lg" | "xl";
   loading?: boolean;
 };
@@ -27,13 +27,14 @@ export default function Button({
   const variants = {
     primary: `
       bg-white
-      text-burgundy border border-gold/30
+      text-burgundy border
       hover:scale-105 hover:shadow-lg hover:shadow-gold/20
       focus:ring-burgundy/30
     `,
     secondary: `
       px-6 py-2 rounded-full bg-[#C8A983] text-white shadow-md hover:bg-[#B3905E] transition font-semibold
     `,
+    third: `px-6 py-3 rounded-xl bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold transition cursor-pointer`
   };
 
   const sizes = {
