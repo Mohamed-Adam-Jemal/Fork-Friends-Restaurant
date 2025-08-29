@@ -75,7 +75,11 @@ const Rating: React.FC<RatingProps> = ({
           );
         } else {
           return (
-            <FontAwesomeIcon key={i} icon={faStar} className="text-gray-300 fill-white stroke-gray-300" />
+            <FontAwesomeIcon
+              key={i}
+              icon={faStar}
+              className="text-gray-300 fill-white stroke-gray-300"
+            />
           );
         }
       })}
@@ -92,7 +96,7 @@ const TestimonialItem: React.FC<TestimonialItemProps> = ({ item }) => {
 
   return (
     <div
-      className="bg-white rounded-[50px] p-6 mx-3 w-[300px] flex-shrink-0 
+      className="bg-white rounded-[30px] p-6 mx-3 w-[280px] md:w-[300px] flex-shrink-0 
         transform transition-transform duration-300 hover:scale-105 cursor-pointer"
       style={{ boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}
     >
@@ -133,28 +137,23 @@ const TestimonialItem: React.FC<TestimonialItemProps> = ({ item }) => {
 };
 
 // ImageUpload Component
-const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  imageFile, 
-  setImageFile, 
-  existingImage, 
-  setImage 
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  imageFile,
+  setImageFile,
+  existingImage,
+  setImage,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
   const handleFiles = async (files: FileList | null) => {
-    console.log("handleFiles triggered", files);
     if (files && files[0]) {
       try {
         const compressedFile = await compressImage(files[0]);
-        console.log("Original size (KB):", files[0].size / 1024);
-        console.log("Compressed size (KB):", compressedFile.size / 1024);
-
         setImageFile(compressedFile);
-        setImage(""); // clear existing image URL if any
+        setImage("");
       } catch (error) {
         console.error("Compression error:", error);
-        // fallback to original file if compression fails
         setImageFile(files[0]);
         setImage("");
       }
@@ -170,23 +169,24 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         onClick={() => fileInputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setDragActive(true);
         }}
         onDragLeave={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setDragActive(false);
         }}
         onDrop={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setDragActive(false);
           handleFiles(e.dataTransfer.files);
         }}
         className={`mt-2 w-full flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer p-6 transition-colors
-          ${dragActive ? "border-[#B3905E] bg-[#F5E6C0]" : "border-gray-300 bg-white"}
-          hover:border-[#B3905E]
+          ${
+            dragActive
+              ? "border-[#B3905E] bg-[#F5E6C0]"
+              : "border-gray-300 bg-white"
+          }
+          hover:border-[#B3905E]"
         `}
       >
         {imageFile ? (
@@ -195,7 +195,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               src={URL.createObjectURL(imageFile)}
               alt="Selected preview"
               className="object-cover w-full h-full rounded-xl"
-              onLoad={() => URL.revokeObjectURL(URL.createObjectURL(imageFile))}
             />
             <button
               type="button"
@@ -229,7 +228,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         ) : (
           <>
             <FiUpload className="h-10 w-10 mb-2" />
-            <p className="text-gray-600 text-sm">Click or drag & drop to upload your photo</p>
+            <p className="text-gray-600 text-sm">
+              Click or drag & drop to upload your photo
+            </p>
           </>
         )}
       </div>
@@ -246,12 +247,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
 // Main Testimonial Component
 const Testimonial: React.FC = () => {
-  // Testimonials state
   const [testimonials, setTestimonials] = useState<TestimonialItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal and form state
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     photo: "",
@@ -262,11 +262,13 @@ const Testimonial: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  // Image upload states
+  // Image upload state
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [image, setImage] = useState<string>(""); // URL or base64 string
+  const [image, setImage] = useState<string>("");
 
-  // Fetch testimonials on component mount
+  // Ref for the scroll track element
+  const trackRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
@@ -283,7 +285,17 @@ const Testimonial: React.FC = () => {
     fetchTestimonials();
   }, []);
 
-  // Modal handlers
+  // New useEffect hook to dynamically set animation duration
+  useEffect(() => {
+    if (trackRef.current && testimonials.length > 0) {
+      const track = trackRef.current;
+      const width = track.scrollWidth / 2; // Since duplicated
+      const speed = 50; // pixels per second
+      const duration = width / speed;
+      track.style.animationDuration = `${duration}s`;
+    }
+  }, [testimonials]);
+
   const openModal = () => {
     setForm({ photo: "", name: "", rating: 5, content: "" });
     setImage("");
@@ -292,13 +304,12 @@ const Testimonial: React.FC = () => {
     setShowModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
+  const closeModal = () => setShowModal(false);
 
-  // Form handlers
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -309,8 +320,6 @@ const Testimonial: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
     if (!form.name.trim()) {
       setFormError("Name is required");
       return;
@@ -323,62 +332,39 @@ const Testimonial: React.FC = () => {
       setFormError("Rating must be between 1 and 5");
       return;
     }
-    
+
     setFormError(null);
     setSubmitLoading(true);
 
     try {
-      let imageUrl = image; // existing image URL
-
-      // Upload image if new file is selected
+      let imageUrl = image;
       if (imageFile) {
-        try {
-          const formData = new FormData();
-          formData.append("file", imageFile);
-
-          const uploadRes = await fetch("/api/upload-image/testimonials-users-images", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!uploadRes.ok) {
-            throw new Error("Image upload failed");
-          }
-
-          const uploadData = await uploadRes.json();
-          if (!uploadData?.signedUrl) {
-            throw new Error("Failed to get image URL from server");
-          }
-
-          imageUrl = uploadData.signedUrl;
-          console.log("Image uploaded successfully:", imageUrl);
-        } catch (err) {
-          console.error("Upload error:", err);
-          throw new Error("An error occurred while uploading the image");
-        }
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        const uploadRes = await fetch(
+          "/api/upload-image/testimonials-users-images",
+          { method: "POST", body: formData }
+        );
+        if (!uploadRes.ok) throw new Error("Image upload failed");
+        const uploadData = await uploadRes.json();
+        if (!uploadData?.signedUrl)
+          throw new Error("Failed to get image URL from server");
+        imageUrl = uploadData.signedUrl;
       }
 
-      // Submit testimonial with uploaded image URL
-      const payload = {
-        ...form,
-        photo: imageUrl || "", // override photo field with uploaded image URL or empty string
-      };
-
+      const payload = { ...form, photo: imageUrl || "" };
       const res = await fetch("/api/testimonials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || "Failed to submit review");
       }
-
       const newTestimonial = await res.json();
       setTestimonials((prev) => [newTestimonial, ...prev]);
       setShowModal(false);
-      
     } catch (error: any) {
       setFormError(error.message || "Failed to submit review");
     } finally {
@@ -386,7 +372,6 @@ const Testimonial: React.FC = () => {
     }
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="text-center py-20">
@@ -395,7 +380,6 @@ const Testimonial: React.FC = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="text-center py-20 text-red-600">
@@ -407,35 +391,7 @@ const Testimonial: React.FC = () => {
   return (
     <>
       <style>{`
-        @keyframes scroll-right {
-          0% {
-            transform: translateX(-50%);
-          }
-          100% {
-            transform: translateX(0);
-          }
-        }
-        .scroll-container {
-          display: flex;
-          width: calc(2 * 100%);
-          animation: scroll-right 30s linear infinite;
-        }
-
-        @media (max-width: 1024px) {
-          .scroll-container {
-            animation-duration: 20s; /* faster on tablets */
-          }
-        }
-
-        @media (max-width: 768px) {
-          .scroll-container {
-            animation-duration: 12s; /* even faster on mobile */
-          }
-        }
-
-        .scroll-container:hover {
-          animation-play-state: paused;
-        }
+        /* Remove animation properties from CSS */
         .scroll-wrapper {
           overflow: hidden;
           width: 100%;
@@ -444,15 +400,23 @@ const Testimonial: React.FC = () => {
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
-        /* Modal backdrop */
-        .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          background-color: rgba(0,0,0,0.5);
+        .scroll-track {
           display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
+          width: max-content;
+          animation: scroll-left linear infinite;
+        }
+
+        @keyframes scroll-left {
+          from {
+            transform: translateX(0%);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+
+        .scroll-track:hover {
+          animation-play-state: paused;
         }
       `}</style>
 
@@ -470,14 +434,18 @@ const Testimonial: React.FC = () => {
                 with us.
               </p>
             </div>
-            <Button variant="secondary" onClick={openModal} className="flex items-center gap-2">
-              <FaPlus/> Add Review
+            <Button
+              variant="secondary"
+              onClick={openModal}
+              className="flex items-center gap-2"
+            >
+              <FaPlus /> Add Review
             </Button>
           </div>
 
           {/* Testimonials Carousel */}
           <div className="scroll-wrapper">
-            <div className="scroll-container">
+            <div className="scroll-track" ref={trackRef}>
               {[...testimonials, ...testimonials].map((item, idx) => (
                 <TestimonialItem key={item.id + "-" + idx} item={item} />
               ))}
@@ -495,13 +463,11 @@ const Testimonial: React.FC = () => {
               <h3 className="text-2xl font-semibold mb-4 text-zinc-900 dark:text-white">
                 Add Your Review
               </h3>
-              
-              {formError && (
-                <p className="text-red-600 mb-3">{formError}</p>
-              )}
-              
+
+              {formError && <p className="text-red-600 mb-3">{formError}</p>}
+
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Name Input */}
+                {/* Name */}
                 <div>
                   <label className="block mb-1 font-medium" htmlFor="name">
                     Name <span className="text-red-600">*</span>
@@ -519,9 +485,7 @@ const Testimonial: React.FC = () => {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block mb-1 font-medium">
-                    Upload Photo
-                  </label>
+                  <label className="block mb-1 font-medium">Upload Photo</label>
                   <ImageUpload
                     imageFile={imageFile}
                     setImageFile={setImageFile}
@@ -530,7 +494,7 @@ const Testimonial: React.FC = () => {
                   />
                 </div>
 
-                {/* Rating Dropdown */}
+                {/* Rating */}
                 <div>
                   <label className="block mb-1 font-medium" htmlFor="rating">
                     Rating <span className="text-red-600">*</span>
@@ -539,17 +503,17 @@ const Testimonial: React.FC = () => {
                     label="Select Rating"
                     options={["5", "4", "3", "2", "1"]}
                     selected={form.rating ? form.rating.toString() : null}
-                    onSelect={(value) => {
+                    onSelect={(value) =>
                       setForm((prev) => ({
                         ...prev,
                         rating: value ? Number(value) : 0,
-                      }));
-                    }}
+                      }))
+                    }
                     buttonClassName="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition text-left"
                   />
                 </div>
 
-                {/* Review Content */}
+                {/* Content */}
                 <div>
                   <label className="block mb-1 font-medium" htmlFor="content">
                     Review <span className="text-red-600">*</span>
@@ -566,7 +530,7 @@ const Testimonial: React.FC = () => {
                   />
                 </div>
 
-                {/* Form Actions */}
+                {/* Actions */}
                 <div className="flex justify-end space-x-3 mt-6">
                   <Button
                     type="button"

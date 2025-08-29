@@ -10,26 +10,16 @@ import Dropdown from "@/components/ui/Dropdown";
 import Spinner from "@/components/ui/Spinner";
 import { MdPedalBike } from "react-icons/md";
 
-type MenuItem = {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  category: string;
-  cuisine: string;
-  chef_choice: boolean;
-};
 
 
 const categories = ["Appetizers", "Salads","Main Dishes", "Sides", "Desserts", "Drinks", "Specials"];
 const cuisines = ["Italian", "Turkish", "French", "Japanese", "Mexican"];
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingId, setAddingId] = useState<number | null>(null);
-  const { addToCart, basketRef } = useCart();
+  const { addToCart } = useCart();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
@@ -120,53 +110,9 @@ const filteredItems = Array.isArray(menuItems)
   const getItemsByCategory = (category: string) =>
     filteredItems.filter((item) => item.category === category);
 
-  const handleAddClick = (item: MenuItem) => {
+  const handleAddClick = (item: any) => {
     setAddingId(item.id);
     addToCart(item);
-
-    const basket = basketRef.current;
-    const img = document.getElementById(`menu-item-img-${item.id}`) as HTMLElement;
-
-    if (img && basket) {
-      const imgRect = img.getBoundingClientRect();
-      const basketRect = basket.getBoundingClientRect();
-
-      // Clone the image
-      const clone = img.cloneNode(true) as HTMLElement;
-      clone.style.position = "fixed";
-      clone.style.top = `${imgRect.top}px`;
-      clone.style.left = `${imgRect.left}px`;
-      clone.style.width = `${imgRect.width}px`;
-      clone.style.height = `${imgRect.height}px`;
-      clone.style.borderRadius = "12px";
-      clone.style.transition = "all 0.8s ease-in-out";
-      clone.style.zIndex = "9999";
-      document.body.appendChild(clone);
-
-      // Trigger animation
-      requestAnimationFrame(() => {
-        clone.style.top = `${basketRect.top + basketRect.height / 2 - imgRect.height / 4}px`;
-        clone.style.left = `${basketRect.left + basketRect.width / 2 - imgRect.width / 4}px`;
-        clone.style.width = `${imgRect.width / 2}px`;
-        clone.style.height = `${imgRect.height / 2}px`;
-        clone.style.opacity = "0.5";
-      });
-
-      // Remove clone after animation
-      clone.addEventListener("transitionend", () => {
-        clone.remove();
-      });
-    }
-
-    // Basket bounce effect
-    if (basket) {
-      basket.classList.add("animate-basket");
-      setTimeout(() => {
-        basket?.classList.remove("animate-basket");
-      }, 500);
-    }
-
-    // Reset addingId for button text
     setTimeout(() => setAddingId(null), 1000);
   };
 
@@ -248,7 +194,7 @@ const filteredItems = Array.isArray(menuItems)
               className={`px-5 py-2 rounded-full font-normal shadow transition flex items-center gap-1 cursor-pointer ${
                 chefChoiceOnly
                   ? "bg-[#B3905E] text-white"
-                  : "bg-white hover:bg-[#B3905E] hover:text-white"
+                  : "bg-white hover:bg-[#C8A983] hover:text-white"
               }`}
             >
               Chef's Choice
@@ -297,7 +243,6 @@ const filteredItems = Array.isArray(menuItems)
                      <div className="relative w-full h-full">
                       <div className="relative w-full h-full">
                         <Image
-                          id={`menu-item-img-${item.id}`}
                           src={item.image}
                           alt={item.name}
                           fill
@@ -326,8 +271,10 @@ const filteredItems = Array.isArray(menuItems)
                         onClick={() => handleAddClick(item)}
                         size="md"
                         className={`
+                          border border-gold/30
                           flex items-center gap-2 px-3 py-2 text-base
                           hover:scale-105
+                          focus:ring-burgundy/30
                           ${addingId === item.id ? "scale-95 shadow-inner" : ""}
                         `}
                       >

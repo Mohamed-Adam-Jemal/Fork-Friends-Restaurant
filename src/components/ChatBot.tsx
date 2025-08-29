@@ -18,7 +18,7 @@ export default function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false); // <-- new error state
+  const [error, setError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -31,11 +31,11 @@ export default function ChatBot() {
 
   const sendMessage = async () => {
     if (!input.trim()) {
-      setError(true); // mark input as invalid
+      setError(true);
       return;
     }
 
-    setError(false); // clear error
+    setError(false);
     const userMessage: Message = { type: "user", text: input };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
@@ -67,6 +67,37 @@ export default function ChatBot() {
     }
   };
 
+  // Dynamic greeting when chat opens
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      const fetchGreeting = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch("/api/ai-agent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: "Hello" }), // trigger greeting
+          });
+
+          const data = await res.json();
+
+          const aiMessage: Message = {
+            type: "ai",
+            text: data.reply ?? "Hello! I’m Forky, your AI assistant."
+          };
+
+          setMessages([aiMessage]);
+        } catch (err) {
+          setMessages([{ type: "ai", text: "Oops! Couldn’t start the chat." }]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchGreeting();
+    }
+  }, [isOpen]);
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <AnimatePresence>
@@ -89,7 +120,20 @@ export default function ChatBot() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 p-3 overflow-y-auto text-sm text-gray-700 flex flex-col gap-2">
+            <div
+              className="flex-1 p-3 overflow-y-auto text-sm text-gray-700 flex flex-col gap-2"
+              onWheelCapture={(e) => {
+                const target = e.currentTarget;
+                const isAtTop = target.scrollTop === 0;
+                const isAtBottom =
+                  target.scrollHeight - target.scrollTop === target.clientHeight;
+
+                // If not at the very top/bottom, keep scroll inside chatbox
+                if (!(isAtTop && e.deltaY < 0) && !(isAtBottom && e.deltaY > 0)) {
+                  e.stopPropagation();
+                }
+              }}
+            >
               {messages.map((msg, idx) => (
                 <motion.div
                   key={idx}
@@ -130,14 +174,15 @@ export default function ChatBot() {
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
-                  if (error) setError(false); // remove red border while typing
+                  if (error) setError(false);
                 }}
                 onKeyDown={(e) => e.key === "Enter" && !loading && sendMessage()}
                 className={`flex-1 rounded-full px-3 py-2 border-2 focus:outline-none ${
-                  error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[#C8A983]"
+                  error
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-[#C8A983]"
                 }`}
               />
-
 
               <button
                 onClick={sendMessage}
