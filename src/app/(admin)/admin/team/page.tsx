@@ -7,6 +7,7 @@ import { Edit3, PlusCircle } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SomethingWentWrong from '@/components/SomethingWentWrong';
 import Dropdown from '@/components/ui/Dropdown';
+import { FiX } from 'react-icons/fi';
 
 type TeamMember = {
   id: number;
@@ -28,7 +29,6 @@ export default function TeamPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
-  
 
 
   // Modal states
@@ -207,7 +207,7 @@ export default function TeamPage() {
       {loading && <Spinner name="team members" />}
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
         {filteredMembers.map((member) => {
           const initials = member.name
             .split(' ')
@@ -218,7 +218,7 @@ export default function TeamPage() {
           return (
             <div
               key={member.id}
-              className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300 min-w-[220px]"
+              className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-between text-center hover:shadow-lg transition-shadow duration-300 min-w-[190px] "
             >
               {member.image ? (
                 <img
@@ -233,7 +233,7 @@ export default function TeamPage() {
               )}
 
               <h2 className="!text-lg font-semibold text-[#B3905E]">{member.name}</h2>
-              <p className="!text-gray-600 text-sm mb-1">{member.email}</p>
+              <p className="!text-gray-600 text-sm mb-1 break-all">{member.email}</p>
               <p className="!text-gray-600 text-sm mb-1">{member.phone}</p>
               <p className="!text-gray-500 text-xs uppercase tracking-wide">{member.role}</p>
 
@@ -266,9 +266,14 @@ export default function TeamPage() {
             onSubmit={handleSubmit}
             className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto"
           >
-            <h2 className="!text-3xl font-extrabold mb-6 text-[#B3905E]">
-              {editingMember ? 'Edit Team Member' : 'Add New Team Member'}
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#B3905E]">
+                {editingMember ? 'Edit Team Member' : 'Add New Team Member'}
+              </h2>
+              <button type="button" onClick={() => setShowForm(false)}>
+                <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
+              </button>
+            </div>
 
             <label className="block mb-4 font-semibold">
               Name <span className="text-red-500">*</span>
@@ -303,19 +308,17 @@ export default function TeamPage() {
             </label>
 
             <label className="block mb-4 font-semibold">
-              Role <span className="text-red-500">*</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60"
-              >
-                {roles.slice(1).map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </label>
+                Role <span className="text-red-500">*</span>
+                <Dropdown
+                  label="Select a role"
+                  options={roles.slice(1)} // same as before
+                  selected={role}
+                  onSelect={(value) => setRole(value || "")}
+                  buttonClassName="w-full mt-2 border border-gray-300 text-left rounded-xl px-4 py-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60"
+                  listClassName="w-full"
+                />
+              </label>
+
 
             <label className="block mb-6 font-semibold">
               Upload Image

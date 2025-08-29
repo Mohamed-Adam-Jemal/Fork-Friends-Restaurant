@@ -102,7 +102,7 @@ export default function AdminContactPage() {
         </div>
       ) : (
         <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
-          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
             {filteredContacts.map((contact) => (
               <div
                 key={contact.id}

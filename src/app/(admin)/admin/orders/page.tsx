@@ -178,16 +178,16 @@ const handleSubmit = async (e: React.FormEvent) => {
       </FilteringBar>
 
       {loading ? (
-  <div className="flex justify-center items-center h-96">
-    <Spinner name="orders" />
-  </div>
-) : (
+        <div className="flex justify-center items-center h-96">
+          <Spinner name="orders" />
+        </div>
+      ) : (
         <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
           {/* ... your filteredOrders grid ... */}
         </div>
       )}
         <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
-          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
             {filteredOrders.map((order) => (
               <div
                 key={order.id}

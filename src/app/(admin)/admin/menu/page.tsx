@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
-import { FiUpload } from "react-icons/fi";
+import { FiUpload, FiX } from "react-icons/fi";
 import { compressImage } from "@/utils/compressImage";
 import FilteringBar from "@/components/ui/FilteringBar";
 import Spinner from "@/components/ui/Spinner";
@@ -363,9 +363,14 @@ async function handleDelete(id: number) {
                  transition-transform duration-300 ease-in-out
                  hover:scale-[1.02]"
           >
-            <h2 className="!text-3xl font-extrabold mb-8 text-[#B3905E] tracking-wide">
-              {editingItem ? "Edit Menu Item" : "Add New Menu Item"}
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#B3905E] tracking-wide">
+                {editingItem ? "Edit Menu Item" : "Add New Menu Item"}
+              </h2>
+              <button type="button" onClick={() => setShowForm(false)}>
+                <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
+              </button>
+            </div>
 
             <label className="block mb-6 font-semibold text-lg">
               Name <span className="text-red-600">*</span>

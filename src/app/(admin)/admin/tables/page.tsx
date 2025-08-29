@@ -297,11 +297,11 @@ export default function TablesPage() {
             className="bg-white bg-opacity-95 p-7 rounded-3xl shadow-2xl w-full max-w-90 max-h-[90vh] overflow-auto border border-white/40"
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-[#B3905E]">
-                {editingTable ? 'Edit Table' : 'Add Table'}
+              <h2 className="text-xl sm:text-2xl font-bold text-[#B3905E]">
+                {editingTable ? 'Edit Table' : 'Add New Table'}
               </h2>
               <button type="button" onClick={() => setShowForm(false)}>
-                <FiX size={24} className='hover:text-[#B3905E] transition' />
+                <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
               </button>
             </div>
 
