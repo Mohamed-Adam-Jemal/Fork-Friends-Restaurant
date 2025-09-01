@@ -142,7 +142,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
         setShowOrderForm(false);
         onClose();
         router.push("/");
-      }, 3000);
+      }, 5000);
 
     } catch (error: any) {
       console.error(error);

@@ -251,6 +251,12 @@ const Testimonial: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  
+  // Drag / manual scroll state
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
@@ -287,14 +293,24 @@ const Testimonial: React.FC = () => {
 
   // New useEffect hook to dynamically set animation duration
   useEffect(() => {
-    if (trackRef.current && testimonials.length > 0) {
-      const track = trackRef.current;
-      const width = track.scrollWidth / 2; // Since duplicated
-      const speed = 50; // pixels per second
-      const duration = width / speed;
-      track.style.animationDuration = `${duration}s`;
+  if (!trackRef.current || testimonials.length === 0) return;
+  let reqId: number;
+  const track = trackRef.current;
+  const speed = 0.5; // pixels per frame
+
+  const animate = () => {
+    if (!isDragging) {
+      track.scrollLeft += speed;
+      if (track.scrollLeft >= track.scrollWidth / 2) {
+        track.scrollLeft = 0; // loop seamlessly
+      }
     }
-  }, [testimonials]);
+    reqId = requestAnimationFrame(animate);
+  };
+  animate();
+  return () => cancelAnimationFrame(reqId);
+  }, [isDragging, testimonials]);
+
 
   const openModal = () => {
     setForm({ photo: "", name: "", rating: 5, content: "" });
@@ -443,19 +459,35 @@ const Testimonial: React.FC = () => {
             </Button>
           </div>
 
-          {/* Testimonials Carousel */}
-          <div className="scroll-wrapper">
-            <div className="scroll-track" ref={trackRef}>
-              {[...testimonials, ...testimonials].map((item, idx) => (
-                <TestimonialItem key={item.id + "-" + idx} item={item} />
-              ))}
-            </div>
+          {/* Testimonials Carousel with auto + manual scroll */}
+          <div
+            className="scroll-wrapper overflow-hidden cursor-grab mt-6 flex"
+            ref={trackRef}
+            onMouseDown={(e) => {
+              setIsDragging(true);
+              setStartX(e.pageX - (trackRef.current?.offsetLeft || 0));
+              setScrollLeft(trackRef.current?.scrollLeft || 0);
+            }}
+            onMouseMove={(e) => {
+              if (!isDragging || !trackRef.current) return;
+              e.preventDefault();
+              const x = e.pageX - trackRef.current.offsetLeft;
+              const walk = (x - startX) * 1; // drag speed multiplier
+              trackRef.current.scrollLeft = scrollLeft - walk;
+            }}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            style={{ display: "flex" }}
+          >
+            {[...testimonials, ...testimonials].map((item, idx) => (
+              <TestimonialItem key={item.id + "-" + idx} item={item} />
+            ))}
           </div>
         </div>
 
         {/* Modal */}
         {showModal && (
-          <div className="modal-backdrop" onClick={closeModal}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-lg" onClick={closeModal}>
             <div
               className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
