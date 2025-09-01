@@ -90,38 +90,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
 
+      <div className="flex flex-col md:flex-row min-h-screen">
       {/* Sidebar */}
       <aside
-        className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-72 bg-white text-[#B3905E] flex flex-col p-6 shadow-xl transition-transform duration-300 ease-in-out
+        className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-72 bg-white text-[#B3905E] flex flex-col justify-between p-6 shadow-xl transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        <div className="hidden md:block mb-10 bg-[#C8AD82] rounded-full p-5">
-          <h2 className="text-xl font-extrabold tracking-wide text-center !text-white">
-            Admin Panel
-          </h2>
+        <div>
+          {/* Logo / Panel header */}
+          <div className="hidden md:block mb-7 bg-[#C8AD82] rounded-full p-5">
+            <h2 className="text-xl font-extrabold tracking-wide text-center !text-white">
+              Admin Panel
+            </h2>
+          </div>
+
+          {/* Nav Links */}
+          <nav className="flex flex-col gap-2">
+            {navLinks.map(({ href, label, icon }) => {
+              const isActive = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-3 px-5 py-3 rounded-xl transition-all font-semibold text-xl ${
+                    isActive
+                      ? "bg-[#C8AD82] text-white shadow"
+                      : "text-[#B3905E] hover:bg-[#F1E8D8] hover:text-[#B3905E]"
+                  }`}
+                >
+                  <span className="text-2xl">{icon}</span>
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="flex flex-col gap-4">
-          {navLinks.map(({ href, label, icon }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-5 py-3 rounded-xl transition-all font-semibold text-xl ${
-                  isActive
-                    ? "bg-[#C8AD82] text-white shadow"
-                    : "text-[#B3905E] hover:bg-[#F1E8D8] hover:text-[#B3905E]"
-                }`}
-              >
-                <span className="text-2xl">{icon}</span>
-                <span>{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-10">
+        {/* Footer / Logout */}
+        <div className="pt-10">
           <button
             onClick={() => setLogoutConfirmOpen(true)}
             className="flex justify-center items-center px-5 py-3 rounded-xl bg-red-100 hover:bg-red-200 transition text-red-700 font-semibold shadow-sm w-full cursor-pointer"
@@ -135,6 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </p>
         </div>
       </aside>
+    </div>
 
       {/* Overlay on mobile */}
       {sidebarOpen && (
@@ -145,7 +152,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content */}
-      <main className="h-screen flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-y-auto">
+      <main className="flex-1 p-6 md:px-10 pt-0 bg-[#F1E8D8] overflow-y-auto">
         {children}
       </main>
 
