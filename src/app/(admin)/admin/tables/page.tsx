@@ -24,6 +24,7 @@ export default function TablesPage() {
   const [searchTableNum, setSearchTableNum] = useState('');
   const [searchSeats, setSearchSeats] = useState('');
   const [filteredTables, setFilteredTables] = useState<Table[]>([]);
+  const [searchAvailability, setSearchAvailability] = useState<'all' | 'available' | 'reserved'>('all');
   const [loading, setLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -71,20 +72,28 @@ export default function TablesPage() {
   };
 
   useEffect(() => {
-  const filtered = tables.filter((table) => {
-    const matchesTable = table.table_number
-      .toString()
-      .includes(searchTableNum.trim());
+    const filtered = tables.filter((table) => {
+      const matchesTable = table.table_number
+        .toString()
+        .includes(searchTableNum.trim());
 
-    const matchesSeats = searchSeats
-      ? table.seats.toString().includes(searchSeats.trim())
-      : true;
+      const matchesSeats = searchSeats
+        ? table.seats.toString().includes(searchSeats.trim())
+        : true;
 
-    return matchesTable && matchesSeats;
-  });
+      const matchesAvailability =
+        searchAvailability === 'all'
+          ? true
+          : searchAvailability === 'available'
+          ? table.availability
+          : !table.availability;
 
-  setFilteredTables(filtered);
-}, [tables, searchTableNum, searchSeats]);
+      return matchesTable && matchesSeats && matchesAvailability;
+    });
+
+    setFilteredTables(filtered);
+  }, [tables, searchTableNum, searchSeats, searchAvailability]);
+
 
 
   const deleteTable = async (id: number) => {
@@ -191,22 +200,41 @@ export default function TablesPage() {
 
 
       <FilteringBar className="w-full mb-6 flex flex-col sm:flex-row gap-4">
-  <input
-    type="text"
-    placeholder="Search by table number..."
-    value={searchTableNum}
-    onChange={(e) => setSearchTableNum(e.target.value)}
-    className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black cursor-pointer"
-  />
+        <input
+          type="text"
+          placeholder="Search by table number..."
+          value={searchTableNum}
+          onChange={(e) => setSearchTableNum(e.target.value)}
+          className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black cursor-pointer"
+        />
 
-  <input
-    type="text"
-    placeholder="Search by seats..."
-    value={searchSeats}
-    onChange={(e) => setSearchSeats(e.target.value)}
-    className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black cursor-pointer"
-  />
-</FilteringBar>
+        <input
+          type="text"
+          placeholder="Search by seats..."
+          value={searchSeats}
+          onChange={(e) => setSearchSeats(e.target.value)}
+          className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black cursor-pointer"
+        />
+        <Dropdown
+          label="Filter by availability"
+          options={["All", "Available", "Reserved"]}
+          selected={
+            searchAvailability === "all"
+              ? "All"
+              : searchAvailability === "available"
+              ? "Available"
+              : "Reserved"
+          }
+          onSelect={(value) => {
+            if (value === "Available") setSearchAvailability("available");
+            else if (value === "Reserved") setSearchAvailability("reserved");
+            else setSearchAvailability("all");
+          }}
+          buttonClassName="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 text-left focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition cursor-pointer"
+          listClassName="w-full"
+        />
+      </FilteringBar>
+      
 
 
       {loading ? (
@@ -214,7 +242,7 @@ export default function TablesPage() {
           <Spinner name="tables" />
         </div>
       ) : (
-        <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
+        <>
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
             {filteredTables.map((table) => (
               <div
@@ -274,7 +302,7 @@ export default function TablesPage() {
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
 
       {showDeleteConfirm && (

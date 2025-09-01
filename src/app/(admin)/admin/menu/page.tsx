@@ -274,7 +274,7 @@ async function handleDelete(id: number) {
       {loading && <Spinner name="menu items" />}
       {error && <SomethingWentWrong message={error} onRetry={fetchMenu} />}
 
-      <div className="mb-10 max-h-[60vh] overflow-y-auto pr-2.5">
+      <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {filteredItems.length === 0 && !loading && (
             <p className="col-span-full text-center text-gray-500">
@@ -350,7 +350,7 @@ async function handleDelete(id: number) {
             </div>
           ))}
         </div>
-      </div>
+      </>
 
       {/* Form modal */}
       {showForm && (
@@ -508,10 +508,10 @@ async function handleDelete(id: number) {
               >
                 {saving ? (
                   <>
-                    Saving...
+                    Saving <span className="w-4 h-4 border-2 border-t-white border-r-white border-b-transparent border-l-transparent rounded-full animate-spin inline-block"></span>
                   </>
                 ) : (
-                  editingItem ? "Save Changes" : "Add Item"
+                  editingItem ? "Save" : "Add Item"
                 )}
               </button>
 

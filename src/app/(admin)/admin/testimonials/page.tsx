@@ -114,7 +114,7 @@ export default function AdminTestimonialPage() {
           <Spinner name="testimonials" />
         </div>
       ) : (
-        <div className="overflow-y-auto max-h-[calc(100vh-220px)] pr-2">
+        <>
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
             {filteredTestimonials.map((t) => (
               <div
@@ -160,7 +160,7 @@ export default function AdminTestimonialPage() {
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
 
       {showDeleteConfirm && (
