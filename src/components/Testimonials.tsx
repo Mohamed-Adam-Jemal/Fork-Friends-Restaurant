@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faStarHalfAlt } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import { FiUpload } from "react-icons/fi";
+import { FiUpload, FiX } from "react-icons/fi";
 import Spinner from "./ui/Spinner";
 import Button from "./ui/Button";
 import Dropdown from "./ui/Dropdown";
@@ -477,7 +477,22 @@ const Testimonial: React.FC = () => {
             }}
             onMouseUp={() => setIsDragging(false)}
             onMouseLeave={() => setIsDragging(false)}
-            style={{ display: "flex" }}
+
+            onTouchStart={(e) => {
+            setIsDragging(true);
+            setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
+            setScrollLeft(trackRef.current?.scrollLeft || 0);
+          }}
+          onTouchMove={(e) => {
+            if (!isDragging || !trackRef.current) return;
+            const x = e.touches[0].pageX - trackRef.current.offsetLeft;
+            const walk = (x - startX) * 1;
+            trackRef.current.scrollLeft = scrollLeft - walk;
+          }}
+          onTouchEnd={() => setIsDragging(false)}
+          onTouchCancel={() => setIsDragging(false)}
+
+          style={{ display: "flex" }}
           >
             {[...testimonials, ...testimonials].map((item, idx) => (
               <TestimonialItem key={item.id + "-" + idx} item={item} />
@@ -487,15 +502,23 @@ const Testimonial: React.FC = () => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-lg" onClick={closeModal}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-sm" onClick={closeModal}>
             <div
-              className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full mx-4"
+              className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto
+                 border border-white/40
+                 text-gray-900
+                 transition-transform duration-300 ease-in-out
+                 hover:scale-[1.02]"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-2xl font-semibold mb-4 text-zinc-900 dark:text-white">
-                Add Your Review
-              </h3>
-
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="flex justify-betweentext-xl sm:text-2xl font-extrabold text-[#B3905E] tracking-wide items-center">
+                  Add your review
+                </h3>
+                <button type="button" onClick={() => setShowModal(false)}>
+                  <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
+                </button>
+              </div>
               {formError && <p className="text-red-600 mb-3">{formError}</p>}
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -557,7 +580,7 @@ const Testimonial: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     rows={4}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+                    className="w-full h-27 border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
                     placeholder="Write your review here..."
                   />
                 </div>
@@ -577,7 +600,14 @@ const Testimonial: React.FC = () => {
                     disabled={submitLoading}
                     variant="secondary"
                   >
-                    {submitLoading ? "Submitting..." : "Submit Review"}
+                    {submitLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        Saving
+                        <span className="w-4 h-4 border-2 border-t-white border-r-white border-b-transparent border-l-transparent rounded-full animate-spin inline-block"></span>
+                      </div>
+                    ) : (
+                      "Submit"
+                    )}
                   </Button>
                 </div>
               </form>

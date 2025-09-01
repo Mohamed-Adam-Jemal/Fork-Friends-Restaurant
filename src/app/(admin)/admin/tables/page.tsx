@@ -195,7 +195,7 @@ export default function TablesPage() {
         onClick={() => openEditForm(null)}
         className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2 cursor-pointer"
       >
-        <PlusCircle size={23} /> Add New Table
+        <PlusCircle size={23} /> Add new table
       </button>
 
 
@@ -326,7 +326,7 @@ export default function TablesPage() {
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-[#B3905E]">
-                {editingTable ? 'Edit Table' : 'Add New Table'}
+                {editingTable ? 'Edit Table' : 'Add new table'}
               </h2>
               <button type="button" onClick={() => setShowForm(false)}>
                 <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
@@ -397,7 +397,13 @@ export default function TablesPage() {
                 className="px-4 py-2 bg-[#B3905E] text-white hover:bg-[#a37847] rounded-lg cursor-pointer flex items-center justify-center gap-2"
                 disabled={saving}
               >
-                {saving ? 'Saving...' : editingTable ? 'Save Changes' : 'Add Table'}
+                {saving ? (
+                  <>
+                    Saving <span className="w-4 h-4 border-2 border-t-white border-r-white border-b-transparent border-l-transparent rounded-full animate-spin inline-block"></span>
+                  </>
+                ) : (
+                  editingTable ? "Save" : "Add Item"
+                )}
               </Button>
             </div>
           </form>

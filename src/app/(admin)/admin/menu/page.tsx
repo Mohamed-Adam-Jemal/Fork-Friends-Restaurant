@@ -10,6 +10,7 @@ import { Edit3, PlusCircle } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SomethingWentWrong from "@/components/SomethingWentWrong";
 import Dropdown from "@/components/ui/Dropdown";
+import Button from "@/components/ui/Button";
 
 type MenuItem = {
   id: number;
@@ -235,7 +236,7 @@ async function handleDelete(id: number) {
         onClick={openAddForm}
         className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2 cursor-pointer"
       >
-        <PlusCircle size={23} /> Add New Menu Item
+        <PlusCircle size={23} /> Add new menu item
       </button>
 
       {/* Filter bar */}
@@ -354,7 +355,7 @@ async function handleDelete(id: number) {
 
       {/* Form modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-sm">
           <form
             onSubmit={handleSubmit}
             className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto
@@ -365,7 +366,7 @@ async function handleDelete(id: number) {
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl sm:text-2xl font-extrabold text-[#B3905E] tracking-wide">
-                {editingItem ? "Edit Menu Item" : "Add New Menu Item"}
+                {editingItem ? "Edit menu item" : "Add new menu item"}
               </h2>
               <button type="button" onClick={() => setShowForm(false)}>
                 <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
@@ -501,7 +502,8 @@ async function handleDelete(id: number) {
                 Cancel
               </button>
 
-              <button
+              <Button
+                variant="secondary"
                 type="submit"
                 className="px-6 py-3 rounded-xl bg-[#B3905E] hover:bg-[#a37847] text-white font-semibold transition cursor-pointer flex items-center justify-center gap-2"
                 disabled={saving} // disable while saving
@@ -513,7 +515,7 @@ async function handleDelete(id: number) {
                 ) : (
                   editingItem ? "Save" : "Add Item"
                 )}
-              </button>
+              </Button>
 
             </div>
           </form>
