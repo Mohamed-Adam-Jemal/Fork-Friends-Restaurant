@@ -56,6 +56,7 @@ export default function AdminMenuPage() {
   );
 
   const [filterChefChoice, setFilterChefChoice] = useState(false);
+  const [filterFeatured, setFilterFeatured] = useState(false);
   const [searchName, setSearchName] = useState("");
 
   // Category dropdown open state & ref
@@ -221,14 +222,16 @@ async function handleDelete(id: number) {
 
   // Filtered items based on filters
   const filteredItems = menuItems.filter((item) => {
-    const matchesCategory =
-      filterCategory === "All Categories" || item.category === filterCategory;
-    const matchesChefChoice = !filterChefChoice || item.chef_choice === filterChefChoice;
-    const matchesName =
-      item.name.toLowerCase().includes(searchName.trim().toLowerCase());
+  const matchesCategory =
+    filterCategory === "All Categories" || item.category === filterCategory;
+  const matchesChefChoice = !filterChefChoice || item.chef_choice === filterChefChoice;
+  const matchesFeatured = !filterFeatured || item.featured === filterFeatured;
+  const matchesName =
+    item.name.toLowerCase().includes(searchName.trim().toLowerCase());
 
-    return matchesCategory && matchesChefChoice && matchesName;
-  });
+  return matchesCategory && matchesChefChoice && matchesFeatured && matchesName;
+});
+
 
   return (
     <main className="p-6 max-w-6xl mx-auto">
@@ -250,6 +253,16 @@ async function handleDelete(id: number) {
           buttonClassName="w-45 hover:bg-[#B3905E] hover:text-white transition"
           listClassName="z-30"
         />
+
+        {/* Search input */}
+        <input
+          type="text"
+          placeholder="Search by name..."
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+          className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
+        />
+
         {/* Chef's Choice toggle */}
         <button
           onClick={() => setFilterChefChoice(!filterChefChoice)}
@@ -262,14 +275,17 @@ async function handleDelete(id: number) {
           Chef's Choice Only
         </button>
 
-        {/* Search input */}
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          className="bg-white px-5 py-2 rounded-full border border-gray-300 shadow-inner w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#B3905E] transition text-black"
-        />
+        {/* Featured Menu toggle */}
+        <button
+          onClick={() => setFilterFeatured(!filterFeatured)}
+          className={`px-5 py-2 rounded-full shadow transition flex items-center gap-1 cursor-pointer ${
+            filterFeatured
+              ? "bg-[#B3905E] text-white"
+              : "bg-white hover:bg-[#B3905E] hover:text-white"
+          }`}
+        >
+          Featured Menu Only
+        </button>
       </FilteringBar>
 
       {loading && <Spinner name="menu items" />}
