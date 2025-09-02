@@ -124,7 +124,6 @@ async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
   setError(null);
   setSaving(true);
-  // validation skipped here for brevity...
 
   let imageUrl = image; // existing image URL
 
@@ -164,6 +163,7 @@ async function handleSubmit(e: React.FormEvent) {
     image: imageUrl?.trim() || "",
     category: category.trim(),
     chef_choice: chefChoice,
+    featured: featured,
     cuisine: cuisine?.trim() || "",
   };
 
