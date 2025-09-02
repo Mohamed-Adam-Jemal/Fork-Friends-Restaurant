@@ -80,7 +80,7 @@ export default function LoginPage() {
   };
 
 return (
-  <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-[#F3EFE7]">
+  <div className="min-h-screen flex flex-col items-center justify-center px-8 sm:px-6 lg:px-8 bg-[#F3EFE7">
     {/* Logo */}
     <div className="mb-6 w-24 h-24 sm:w-28 sm:h-28 relative flex-shrink-0">
       <Image
@@ -167,14 +167,25 @@ return (
         </div>
 
         {/* Submit Button */}
-        <Button
-          variant="secondary"
-          className="w-full py-3 sm:py-4 text-base sm:text-lg rounded-xl font-semibold"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Logging In..." : "Login"}
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            variant="secondary"
+            className="block mx-auto w-30 py-4 text-base sm:text-lg rounded-xl font-semibold
+                        transition disabled:opacity-60 disabled:saturate-50 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={loading}
+            >
+            {loading ? (
+              <div className="flex justify-center items-center gap-2">
+                Logging in{" "}
+                <span className="w-4 h-4 border-2 border-t-white border-r-white border-b-transparent border-l-transparent rounded-full animate-spin inline-block"></span>
+              </div>
+            ) : (
+              "Login"
+            )}
+            </Button>
+        </div>
+
       </form>
     </div>
   </div>

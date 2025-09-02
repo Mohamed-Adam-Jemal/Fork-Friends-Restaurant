@@ -502,26 +502,35 @@ const Testimonial: React.FC = () => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 bg-opacity-50 backdrop-blur-sm" onClick={closeModal}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm"
+            onClick={closeModal}
+          >
             <div
-              className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto
-                 border border-white/40
-                 text-gray-900
-                 transition-transform duration-300 ease-in-out
-                 hover:scale-[1.02]"
+              className="bg-white bg-opacity-95 backdrop-filter backdrop-blur-md 
+                        p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-2xl 
+                        w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl 
+                        max-h-[90vh] overflow-y-auto border border-white/40 
+                        text-gray-900 transition-transform duration-300 ease-in-out hover:scale-[1.01]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="flex justify-betweentext-xl sm:text-2xl font-extrabold text-[#B3905E] tracking-wide items-center">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-[#B3905E] tracking-wide">
                   Add your review
                 </h3>
                 <button type="button" onClick={() => setShowModal(false)}>
-                  <FiX size={24} className='hover:text-[#B3905E] transition cursor-pointer' />
+                  <FiX
+                    size={22}
+                    className="sm:size-6 hover:text-[#B3905E] transition cursor-pointer"
+                  />
                 </button>
               </div>
+
               {formError && <p className="text-red-600 mb-3">{formError}</p>}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                 {/* Name */}
                 <div>
                   <label className="block mb-1 font-medium" htmlFor="name">
@@ -534,7 +543,7 @@ const Testimonial: React.FC = () => {
                     value={form.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+                    className="w-full border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
                   />
                 </div>
 
@@ -564,7 +573,7 @@ const Testimonial: React.FC = () => {
                         rating: value ? Number(value) : 0,
                       }))
                     }
-                    buttonClassName="w-full border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition text-left"
+                    buttonClassName="w-full border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition text-left"
                   />
                 </div>
 
@@ -580,25 +589,18 @@ const Testimonial: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     rows={4}
-                    className="w-full h-27 border border-gray-300 rounded-xl px-4 py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
+                    className="w-full border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 mt-2 focus:outline-none focus:ring-4 focus:ring-[#B3905E]/60 transition"
                     placeholder="Write your review here..."
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end space-x-3 mt-6">
-                  <Button
-                    type="button"
-                    onClick={closeModal}
-                    variant="third"
-                    disabled={submitLoading}
-                  >
-                    Cancel
-                  </Button>
+                <div className="flex flex-col sm:flex-row justify-end sm:space-x-3 space-y-3 sm:space-y-0 mt-6">
                   <Button
                     type="submit"
                     disabled={submitLoading}
                     variant="secondary"
+                    className="w-full sm:w-auto"
                   >
                     {submitLoading ? (
                       <div className="flex items-center justify-center gap-2">
@@ -609,12 +611,21 @@ const Testimonial: React.FC = () => {
                       "Submit"
                     )}
                   </Button>
+                  <Button
+                    type="button"
+                    onClick={closeModal}
+                    variant="third"
+                    disabled={submitLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </form>
             </div>
           </div>
         )}
-      </section>
+    </section>
     </>
   );
 };
