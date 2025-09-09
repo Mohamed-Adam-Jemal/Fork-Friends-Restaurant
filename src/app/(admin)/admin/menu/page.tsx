@@ -234,7 +234,7 @@ async function handleDelete(id: number) {
 
 
   return (
-    <main className="p-6 max-w-6xl mx-auto">
+    <main className="p-6 max-w-6xl mx-auto h-150">
       <button
         onClick={openAddForm}
         className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2 cursor-pointer"

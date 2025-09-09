@@ -54,10 +54,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 z-50 bg-white text-white flex items-center justify-between px-4 py-3 shadow-md">
-        <div className="flex items-center flex-1 justify-between">
           {/* Left: Logo */}
           <div className="flex items-center space-x-5">
             <Image
@@ -86,11 +85,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <FaBars className="text-2xl" />
             )}
           </button>
-        </div>
       </header>
 
-
-      <div className="flex flex-col md:flex-row min-h-screen">
       {/* Sidebar */}
       <aside
         className={`fixed md:relative top-0 left-0 z-50 md:h-screen h-full w-72 bg-white text-[#B3905E] flex flex-col justify-between p-6 shadow-xl transition-transform duration-300 ease-in-out
@@ -141,7 +137,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </p>
         </div>
       </aside>
-    </div>
 
       {/* Overlay on mobile */}
       {sidebarOpen && (

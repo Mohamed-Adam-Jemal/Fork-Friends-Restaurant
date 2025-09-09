@@ -255,6 +255,7 @@ const Testimonial: React.FC = () => {
   // Drag / manual scroll state
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
   // Modal state
@@ -478,20 +479,32 @@ const Testimonial: React.FC = () => {
             onMouseUp={() => setIsDragging(false)}
             onMouseLeave={() => setIsDragging(false)}
 
-            onTouchStart={(e) => {
-            setIsDragging(true);
-            setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
-            setScrollLeft(trackRef.current?.scrollLeft || 0);
-          }}
-          onTouchMove={(e) => {
-            if (!isDragging || !trackRef.current) return;
-            const x = e.touches[0].pageX - trackRef.current.offsetLeft;
-            const walk = (x - startX) * 1;
-            trackRef.current.scrollLeft = scrollLeft - walk;
-          }}
-          onTouchEnd={() => setIsDragging(false)}
-          onTouchCancel={() => setIsDragging(false)}
+           onTouchStart={(e) => {
+              setIsDragging(true);
+              setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
+              setStartY(e.touches[0].pageY); // ✅ track vertical start
+              setScrollLeft(trackRef.current?.scrollLeft || 0);
+            }}
 
+            onTouchMove={(e) => {
+              if (!isDragging || !trackRef.current) return;
+
+              const touch = e.touches[0];
+              const x = touch.pageX - trackRef.current.offsetLeft;
+              const walk = (x - startX) * 1;
+
+              const deltaX = Math.abs(touch.pageX - startX);
+              const deltaY = Math.abs(touch.pageY - startY);
+
+              // ✅ Prevent vertical scroll if horizontal drag is stronger
+              if (deltaX > deltaY) {
+                e.preventDefault();
+                trackRef.current.scrollLeft = scrollLeft - walk;
+              }
+            }}
+
+            onTouchEnd={() => setIsDragging(false)}
+            onTouchCancel={() => setIsDragging(false)}
           style={{ display: "flex" }}
           >
             {[...testimonials, ...testimonials].map((item, idx) => (
