@@ -408,7 +408,7 @@ const Testimonial: React.FC = () => {
   return (
     <>
       <style>{`
-        /* Remove animation properties from CSS */
+        /* Styles for desktop continuous scroll */
         .scroll-wrapper {
           overflow: hidden;
           width: 100%;
@@ -434,6 +434,14 @@ const Testimonial: React.FC = () => {
 
         .scroll-track:hover {
           animation-play-state: paused;
+        }
+        
+        /* Center testimonial cards on touch devices */
+        @media (max-width: 768px) {
+          .scroll-wrapper {
+            mask-image: none;
+            -webkit-mask-image: none;
+          }
         }
       `}</style>
 
