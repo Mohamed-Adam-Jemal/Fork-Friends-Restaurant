@@ -479,10 +479,10 @@ const Testimonial: React.FC = () => {
             onMouseUp={() => setIsDragging(false)}
             onMouseLeave={() => setIsDragging(false)}
 
-           onTouchStart={(e) => {
+            onTouchStart={(e) => {
               setIsDragging(true);
               setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
-              setStartY(e.touches[0].pageY); // ✅ track vertical start
+              setStartY(e.touches[0].pageY);
               setScrollLeft(trackRef.current?.scrollLeft || 0);
             }}
 
@@ -490,22 +490,30 @@ const Testimonial: React.FC = () => {
               if (!isDragging || !trackRef.current) return;
 
               const touch = e.touches[0];
-              const x = touch.pageX - trackRef.current.offsetLeft;
-              const walk = (x - startX) * 1;
-
-              const deltaX = Math.abs(touch.pageX - startX);
-              const deltaY = Math.abs(touch.pageY - startY);
-
-              // ✅ Prevent vertical scroll if horizontal drag is stronger
-              if (deltaX > deltaY) {
-                e.preventDefault();
-                trackRef.current.scrollLeft = scrollLeft - walk;
+              const currentX = touch.pageX - trackRef.current.offsetLeft;
+              const currentY = touch.pageY;
+              
+              const deltaX = Math.abs(currentX - startX);
+              const deltaY = Math.abs(currentY - startY);
+              
+              // Only handle horizontal scrolling if the gesture is more horizontal than vertical
+              // And only after we've moved at least 10px to establish intent
+              if (deltaX > 10 || deltaY > 10) {
+                if (deltaX > deltaY) {
+                  // This is a horizontal gesture - prevent vertical scrolling
+                  e.preventDefault();
+                  const walk = (currentX - startX) * 1;
+                  trackRef.current.scrollLeft = scrollLeft - walk;
+                } else {
+                  // This is a vertical gesture - stop horizontal dragging
+                  setIsDragging(false);
+                }
               }
             }}
 
             onTouchEnd={() => setIsDragging(false)}
             onTouchCancel={() => setIsDragging(false)}
-          style={{ display: "flex" }}
+            style={{ display: "flex" }}
           >
             {[...testimonials, ...testimonials].map((item, idx) => (
               <TestimonialItem key={item.id + "-" + idx} item={item} />
