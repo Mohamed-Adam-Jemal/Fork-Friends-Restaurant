@@ -251,12 +251,12 @@ const Testimonial: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   // Drag / manual scroll state
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [isHorizontalDrag, setIsHorizontalDrag] = useState(false);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -292,26 +292,28 @@ const Testimonial: React.FC = () => {
     fetchTestimonials();
   }, []);
 
-  // New useEffect hook to dynamically set animation duration
+  // Auto-scroll animation - Fixed to work on mobile too
   useEffect(() => {
-  if (!trackRef.current || testimonials.length === 0) return;
-  let reqId: number;
-  const track = trackRef.current;
-  const speed = 0.5; // pixels per frame
+    if (!trackRef.current || testimonials.length === 0) return;
+    
+    let reqId: number;
+    const track = trackRef.current;
+    const speed = 0.5; // pixels per frame
 
-  const animate = () => {
-    if (!isDragging) {
-      track.scrollLeft += speed;
-      if (track.scrollLeft >= track.scrollWidth / 2) {
-        track.scrollLeft = 0; // loop seamlessly
+    const animate = () => {
+      // Only animate if not actively dragging
+      if (!isDragging) {
+        track.scrollLeft += speed;
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft = 0; // loop seamlessly
+        }
       }
-    }
-    reqId = requestAnimationFrame(animate);
-  };
-  animate();
-  return () => cancelAnimationFrame(reqId);
+      reqId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+    return () => cancelAnimationFrame(reqId);
   }, [isDragging, testimonials]);
-
 
   const openModal = () => {
     setForm({ photo: "", name: "", rating: 5, content: "" });
@@ -408,7 +410,6 @@ const Testimonial: React.FC = () => {
   return (
     <>
       <style>{`
-        /* Remove animation properties from CSS */
         .scroll-wrapper {
           overflow: hidden;
           width: 100%;
@@ -417,23 +418,21 @@ const Testimonial: React.FC = () => {
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
+        
         .scroll-track {
           display: flex;
           width: max-content;
-          animation: scroll-left linear infinite;
-        }
-
-        @keyframes scroll-left {
-          from {
-            transform: translateX(0%);
-          }
-          to {
-            transform: translateX(-50%);
-          }
+          touch-action: pan-y pinch-zoom; /* Allow vertical scroll but enable horizontal handling */
         }
 
         .scroll-track:hover {
           animation-play-state: paused;
+        }
+
+        /* Improve touch responsiveness */
+        .scroll-track * {
+          pointer-events: none;
+          user-select: none;
         }
       `}</style>
 
@@ -460,57 +459,78 @@ const Testimonial: React.FC = () => {
             </Button>
           </div>
 
-          {/* Testimonials Carousel with auto + manual scroll */}
-<div
-  className="scroll-wrapper overflow-hidden cursor-grab mt-6 flex"
-  ref={trackRef}
-  onMouseDown={(e) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (trackRef.current?.offsetLeft || 0));
-    setScrollLeft(trackRef.current?.scrollLeft || 0);
-  }}
-  onMouseMove={(e) => {
-    if (!isDragging || !trackRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - trackRef.current.offsetLeft;
-    const walk = x - startX;
-    trackRef.current.scrollLeft = scrollLeft - walk;
-  }}
-  onMouseUp={() => setIsDragging(false)}
-  onMouseLeave={() => setIsDragging(false)}
+          {/* Testimonials Carousel - Fixed touch handling */}
+          <div
+            className="scroll-wrapper overflow-hidden cursor-grab mt-6"
+            ref={trackRef}
+            style={{ display: "flex" }}
+            // Mouse events
+            onMouseDown={(e) => {
+              setIsDragging(true);
+              setStartX(e.pageX - (trackRef.current?.offsetLeft || 0));
+              setScrollLeft(trackRef.current?.scrollLeft || 0);
+            }}
+            onMouseMove={(e) => {
+              if (!isDragging || !trackRef.current) return;
+              e.preventDefault();
+              const x = e.pageX - trackRef.current.offsetLeft;
+              const walk = (x - startX) * 1;
+              trackRef.current.scrollLeft = scrollLeft - walk;
+            }}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
 
-  // Touch events
-  onTouchStart={(e) => {
-    setIsDragging(true);
-    setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
-    setScrollLeft(trackRef.current?.scrollLeft || 0);
-    document.body.style.overflowY = "hidden"; // lock vertical scroll
-  }}
-  onTouchMove={(e) => {
-    if (!isDragging || !trackRef.current) return;
-    const touch = e.touches[0];
-    const x = touch.pageX - trackRef.current.offsetLeft;
-    const deltaX = x - startX;
+            // Touch events - Fixed for better mobile experience
+            onTouchStart={(e) => {
+              const touch = e.touches[0];
+              setStartX(touch.pageX - (trackRef.current?.offsetLeft || 0));
+              setStartY(touch.pageY);
+              setScrollLeft(trackRef.current?.scrollLeft || 0);
+              setIsHorizontalDrag(false);
+            }}
 
-    // Always prioritize horizontal drag
-    e.preventDefault();
-    trackRef.current.scrollLeft = scrollLeft - deltaX;
-  }}
-  onTouchEnd={() => {
-    setIsDragging(false);
-    document.body.style.overflowY = "auto"; // restore vertical scroll
-  }}
-  onTouchCancel={() => {
-    setIsDragging(false);
-    document.body.style.overflowY = "auto"; // restore vertical scroll
-  }}
-  style={{ display: "flex" }}
->
-  {[...testimonials, ...testimonials].map((item, idx) => (
-    <TestimonialItem key={item.id + "-" + idx} item={item} />
-  ))}
-</div>
+            onTouchMove={(e) => {
+              if (!trackRef.current) return;
 
+              const touch = e.touches[0];
+              const currentX = touch.pageX - trackRef.current.offsetLeft;
+              const currentY = touch.pageY;
+              
+              const deltaX = Math.abs(currentX - startX);
+              const deltaY = Math.abs(currentY - startY);
+              
+              // Determine if this is a horizontal drag
+              if (!isHorizontalDrag && deltaX > 10) {
+                if (deltaX > deltaY) {
+                  setIsHorizontalDrag(true);
+                  setIsDragging(true);
+                }
+              }
+              
+              // If it's a horizontal drag, prevent default and handle scrolling
+              if (isHorizontalDrag) {
+                e.preventDefault();
+                const walk = (currentX - startX) * 1;
+                trackRef.current.scrollLeft = scrollLeft - walk;
+              }
+            }}
+
+            onTouchEnd={() => {
+              setIsDragging(false);
+              setIsHorizontalDrag(false);
+            }}
+
+            onTouchCancel={() => {
+              setIsDragging(false);
+              setIsHorizontalDrag(false);
+            }}
+          >
+            <div className="scroll-track">
+              {[...testimonials, ...testimonials].map((item, idx) => (
+                <TestimonialItem key={item.id + "-" + idx} item={item} />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Modal */}
@@ -638,7 +658,7 @@ const Testimonial: React.FC = () => {
             </div>
           </div>
         )}
-    </section>
+      </section>
     </>
   );
 };
