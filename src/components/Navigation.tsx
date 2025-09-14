@@ -11,22 +11,27 @@ import { AnimatePresence, motion } from "motion/react";
 import { FiMenu, FiX } from "react-icons/fi";
 
 export default function Navigation() {
+  // Client-only flag
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
   const pathname = usePathname();
   const [shake, setShake] = useState(false);
 
   const { cartCount } = useCart();
+
   const showNavbar = () => setVisible(true);
 
-
+  // Scroll detection - only on client
   useEffect(() => {
+    if (!isClient) return;
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 20);
 
       if (currentScrollY < 50) {
         setVisible(true);
@@ -41,7 +46,7 @@ export default function Navigation() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isClient]);
 
   const toggleMenu = () => setMenuOpen((open) => !open);
   const toggleCart = () => setCartOpen((open) => !open);
@@ -59,16 +64,29 @@ export default function Navigation() {
     { href: "/about", label: "About" },
   ];
 
-// When cartCount changes
-useEffect(() => {
-  if (cartCount > 0) {
-    showNavbar();       // make navbar visible again
-    setShake(true);     // trigger shake
+  // Trigger shake on cart count change - client only
+  useEffect(() => {
+    if (!isClient) return;
+    if (cartCount > 0) {
+      showNavbar();
+      setShake(true);
+      const timer = setTimeout(() => setShake(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [cartCount, isClient]);
 
-    const timer = setTimeout(() => setShake(false), 500); // reset after animation
-    return () => clearTimeout(timer);
+  // If not client, render minimal navbar to avoid hydration mismatch
+  if (!isClient) {
+    return (
+      <nav className="bg-white fixed w-full top-0 left-0 z-50">
+        <div className="max-w-8xl mx-auto flex items-center justify-between px-6 py-2 md:py-1">
+          <div className="flex-shrink-0 mx-auto md:mx-0">
+            <Image src="/logos/FnF_Logo.png" alt="Fork & Friends logo" width={60} height={60} />
+          </div>
+        </div>
+      </nav>
+    );
   }
-}, [cartCount]);
 
   return (
     <>

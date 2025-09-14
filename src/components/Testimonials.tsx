@@ -98,7 +98,7 @@ const TestimonialItem: React.FC<TestimonialItemProps> = ({ item }) => {
     <div
       className="bg-white rounded-[30px] p-6 mx-3 w-[280px] md:w-[300px] flex-shrink-0 
         transform transition-transform duration-300 hover:scale-105 cursor-pointer"
-      style={{ boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}
+      // style={{ boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}
     >
       <div className="flex flex-col justify-between h-full">
         <div>
@@ -491,18 +491,18 @@ const Testimonial: React.FC = () => {
 
               const touch = e.touches[0];
               const x = touch.pageX - trackRef.current.offsetLeft;
-              const walk = (x - startX) * 1;
+              const y = touch.pageY;
 
-              const deltaX = Math.abs(touch.pageX - startX);
-              const deltaY = Math.abs(touch.pageY - startY);
+              const deltaX = x - startX;
+              const deltaY = y - startY;
 
-              // ✅ Prevent vertical scroll if horizontal drag is stronger
-              if (deltaX > deltaY) {
-                e.preventDefault();
-                trackRef.current.scrollLeft = scrollLeft - walk;
+              // Only prevent vertical scroll if horizontal movement is dominant
+              if (Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+                e.preventDefault(); // ✅ lock vertical scroll
+                trackRef.current.scrollLeft = scrollLeft - deltaX;
               }
             }}
-
+            
             onTouchEnd={() => setIsDragging(false)}
             onTouchCancel={() => setIsDragging(false)}
           style={{ display: "flex" }}
