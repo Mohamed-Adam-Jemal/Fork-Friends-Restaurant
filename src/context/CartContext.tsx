@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef } from "react";
+import { createContext, useContext, useState, ReactNode, useMemo, useRef } from "react";
 
 type MenuItem = {
   id: number;
@@ -8,6 +8,7 @@ type MenuItem = {
   price: number;
   image: string;
 };
+
 
 type CartItem = MenuItem & {
   quantity: number;
@@ -35,22 +36,7 @@ export const useCart = () => {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isMounted, setIsMounted] = useState(false); // <-- client-side mounted flag
   const basketRef = useRef<HTMLButtonElement>(null);
-
-  // Load cart from localStorage only on client
-  useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
-    setIsMounted(true); // now it's safe to render client-specific state
-  }, []);
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    if (isMounted) localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart, isMounted]);
 
   const addToCart = (item: MenuItem) => {
     setCart((prev) => {
@@ -65,26 +51,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+    // New function: decrease quantity by 1, remove if quantity hits 0
   const increaseQuantity = (id: number) => {
     setCart((prev) =>
       prev
         .map((item) =>
           item.id === id ? { ...item, quantity: item.quantity + 1 } : item
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0) // remove if quantity <= 0
     );
   };
 
+  // New function: decrease quantity by 1, remove if quantity hits 0
   const decreaseQuantity = (id: number) => {
     setCart((prev) =>
       prev
         .map((item) =>
           item.id === id ? { ...item, quantity: item.quantity - 1 } : item
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0) // remove if quantity <= 0
     );
   };
 
+  // Existing remove item completely
   const removeFromCart = (id: number) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
@@ -97,9 +86,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
     [cart]
   );
-
-  // Don't render children until client mounted
-  if (!isMounted) return null;
 
   return (
     <CartContext.Provider

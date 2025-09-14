@@ -280,94 +280,96 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
               )}
 
               {/* Form fields */}
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Full Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onFocus={() =>
-                    setInvalidFields((prev) => ({ ...prev, name: false }))
-                  }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                    invalidFields.name
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#B3905E]"
-                  }`}
-                />
+              <div className="pl-1">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Full Name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onFocus={() =>
+                      setInvalidFields((prev) => ({ ...prev, name: false }))
+                    }
+                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                      invalidFields.name
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-[#B3905E]"
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Email <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() =>
+                      setInvalidFields((prev) => ({ ...prev, email: false }))
+                    }
+                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                      invalidFields.email
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-[#B3905E]"
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Phone <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    onFocus={() =>
+                      setInvalidFields((prev) => ({ ...prev, phone: false }))
+                    }
+                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                      invalidFields.phone
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-[#B3905E]"
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Address <span className="text-red-600">*</span>
+                  </label>
+                  <textarea
+                    placeholder="Enter your address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    onFocus={() =>
+                      setInvalidFields((prev) => ({ ...prev, address: false }))
+                    }
+                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                      invalidFields.address
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-[#B3905E]"
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <div className="text-left font-semibold text-md mt-2">
+                    Items Total: ${totalItemsPrice.toFixed(2)}
+                  </div>
+                  <div className="text-left font-semibold text-md">
+                    Delivery: ${DELIVERY_COST.toFixed(2)}
+                  </div>
+                  <div className="text-left font-bold text-lg mb-3">
+                    Total: ${totalPrice.toFixed(2)}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Email <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() =>
-                    setInvalidFields((prev) => ({ ...prev, email: false }))
-                  }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                    invalidFields.email
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#B3905E]"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Phone <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onFocus={() =>
-                    setInvalidFields((prev) => ({ ...prev, phone: false }))
-                  }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                    invalidFields.phone
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#B3905E]"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Address <span className="text-red-600">*</span>
-                </label>
-                <textarea
-                  placeholder="Enter your address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  onFocus={() =>
-                    setInvalidFields((prev) => ({ ...prev, address: false }))
-                  }
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                    invalidFields.address
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#B3905E]"
-                  }`}
-                />
-              </div>
-
-              <div className="text-left font-semibold text-md mt-2">
-                Items Total: ${totalItemsPrice.toFixed(2)}
-              </div>
-              <div className="text-left font-semibold text-md">
-                Delivery: ${DELIVERY_COST.toFixed(2)}
-              </div>
-              <div className="text-left font-bold text-lg mb-3">
-                Total: ${totalPrice.toFixed(2)}
-              </div>
             </div>
 
             {/* Footer buttons */}
