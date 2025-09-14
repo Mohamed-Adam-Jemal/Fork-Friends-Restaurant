@@ -424,6 +424,14 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
             >
               Go to Checkout
             </Button>
+
+            {/* Close Cart Button */}
+            <button
+              onClick={onClose}
+              className="w-full text-gray-700 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer mt-2"
+            >
+              Close
+            </button>
           </footer>
         )}
       </div>
