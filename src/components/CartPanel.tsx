@@ -356,18 +356,6 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                     }`}
                   />
                 </div>
-
-                <div>
-                  <div className="text-left font-semibold text-md mt-2">
-                    Items Total: ${totalItemsPrice.toFixed(2)}
-                  </div>
-                  <div className="text-left font-semibold text-md">
-                    Delivery: ${DELIVERY_COST.toFixed(2)}
-                  </div>
-                  <div className="text-left font-bold text-lg mb-3">
-                    Total: ${totalPrice.toFixed(2)}
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -380,6 +368,18 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                     invalidFields.acceptPolicy ? "border border-red-500" : ""
                   }`}
                 >
+                   <div>
+                    <div className="text-left font-semibold text-md mt-2">
+                      Items Total: ${totalItemsPrice.toFixed(2)}
+                    </div>
+                    <div className="text-left font-semibold text-md">
+                      Delivery: ${DELIVERY_COST.toFixed(2)}
+                    </div>
+                    <div className="text-left font-bold text-lg mb-3">
+                      Total: ${totalPrice.toFixed(2)}
+                    </div>
+                  </div>
+
                   <Checkbox
                     label="I accept the delivery policy and terms"
                     checked={acceptPolicy}
@@ -416,7 +416,7 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
 
         {/* Footer when in cart view */}
         {!showOrderForm && cartCount > 0 && (
-          <footer className="p-4 border-t border-gray-200">
+          <footer className="relative p-4 border-t border-gray-200">
             <Button
               variant="secondary"
               onClick={() => setShowOrderForm(true)}
