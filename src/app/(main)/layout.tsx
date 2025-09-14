@@ -30,19 +30,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <CartProvider>
-        <ModalProvider>
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <CartProvider>
+          <ModalProvider>
             <Navigation />
             <main className="mt-12">{children}</main>
             {/* ChatBot */}
             <ChatBot />
             <Footer />
-          </body>
-        </ModalProvider>
-      </CartProvider>
+          </ModalProvider>
+        </CartProvider>
+      </body>
     </html>
   );
 }
