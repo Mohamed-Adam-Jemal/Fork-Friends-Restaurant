@@ -461,56 +461,56 @@ const Testimonial: React.FC = () => {
           </div>
 
           {/* Testimonials Carousel with auto + manual scroll */}
-          <div
-            className="scroll-wrapper overflow-hidden cursor-grab mt-6 flex"
-            ref={trackRef}
-            onMouseDown={(e) => {
-              setIsDragging(true);
-              setStartX(e.pageX - (trackRef.current?.offsetLeft || 0));
-              setScrollLeft(trackRef.current?.scrollLeft || 0);
-            }}
-            onMouseMove={(e) => {
-              if (!isDragging || !trackRef.current) return;
-              e.preventDefault();
-              const x = e.pageX - trackRef.current.offsetLeft;
-              const walk = (x - startX) * 1; // drag speed multiplier
-              trackRef.current.scrollLeft = scrollLeft - walk;
-            }}
-            onMouseUp={() => setIsDragging(false)}
-            onMouseLeave={() => setIsDragging(false)}
+<div
+  className="scroll-wrapper overflow-hidden cursor-grab mt-6 flex"
+  ref={trackRef}
+  onMouseDown={(e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (trackRef.current?.offsetLeft || 0));
+    setScrollLeft(trackRef.current?.scrollLeft || 0);
+  }}
+  onMouseMove={(e) => {
+    if (!isDragging || !trackRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - trackRef.current.offsetLeft;
+    const walk = x - startX;
+    trackRef.current.scrollLeft = scrollLeft - walk;
+  }}
+  onMouseUp={() => setIsDragging(false)}
+  onMouseLeave={() => setIsDragging(false)}
 
-           onTouchStart={(e) => {
-              setIsDragging(true);
-              setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
-              setStartY(e.touches[0].pageY); // ✅ track vertical start
-              setScrollLeft(trackRef.current?.scrollLeft || 0);
-            }}
+  // Touch events
+  onTouchStart={(e) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - (trackRef.current?.offsetLeft || 0));
+    setScrollLeft(trackRef.current?.scrollLeft || 0);
+    document.body.style.overflowY = "hidden"; // lock vertical scroll
+  }}
+  onTouchMove={(e) => {
+    if (!isDragging || !trackRef.current) return;
+    const touch = e.touches[0];
+    const x = touch.pageX - trackRef.current.offsetLeft;
+    const deltaX = x - startX;
 
-            onTouchMove={(e) => {
-              if (!isDragging || !trackRef.current) return;
+    // Always prioritize horizontal drag
+    e.preventDefault();
+    trackRef.current.scrollLeft = scrollLeft - deltaX;
+  }}
+  onTouchEnd={() => {
+    setIsDragging(false);
+    document.body.style.overflowY = "auto"; // restore vertical scroll
+  }}
+  onTouchCancel={() => {
+    setIsDragging(false);
+    document.body.style.overflowY = "auto"; // restore vertical scroll
+  }}
+  style={{ display: "flex" }}
+>
+  {[...testimonials, ...testimonials].map((item, idx) => (
+    <TestimonialItem key={item.id + "-" + idx} item={item} />
+  ))}
+</div>
 
-              const touch = e.touches[0];
-              const x = touch.pageX - trackRef.current.offsetLeft;
-              const y = touch.pageY;
-
-              const deltaX = x - startX;
-              const deltaY = y - startY;
-
-              // Only prevent vertical scroll if horizontal movement is dominant
-              if (Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
-                e.preventDefault(); // ✅ lock vertical scroll
-                trackRef.current.scrollLeft = scrollLeft - deltaX;
-              }
-            }}
-            
-            onTouchEnd={() => setIsDragging(false)}
-            onTouchCancel={() => setIsDragging(false)}
-          style={{ display: "flex" }}
-          >
-            {[...testimonials, ...testimonials].map((item, idx) => (
-              <TestimonialItem key={item.id + "-" + idx} item={item} />
-            ))}
-          </div>
         </div>
 
         {/* Modal */}
