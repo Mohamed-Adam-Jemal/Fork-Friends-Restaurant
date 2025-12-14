@@ -1,34 +1,30 @@
 // app/api/contact/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
 
-// GET: Fetch all contact messages
-export async function GET() {
+// GET: Fetch all contact messages (protected)
+export async function GET(req: NextRequest) {
+  // 🔐 Auth check
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
   try {
-    const supabase = await createClient();
+    const messages = await prisma.contact.findMany({
+      orderBy: { createdAt: "desc" },
+    });
 
-    const { data, error } = await supabase
-      .from("contacts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Supabase fetch error:", error);
-      return NextResponse.json({ error: "Failed to fetch messages." }, { status: 500 });
-    }
-
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(messages, { status: 200 });
   } catch (error) {
     console.error("Error fetching messages:", error);
     return NextResponse.json({ error: "Failed to fetch messages." }, { status: 500 });
   }
 }
 
-// POST: Submit a new contact message
-export async function POST(request: NextRequest) {
+// POST: Submit a new contact message (public)
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-
+    const body = await req.json();
     const { firstName, lastName, email, phone, subject, message } = body;
 
     // Basic validation
@@ -36,29 +32,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const newMessage = await prisma.contact.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        phone,
+        subject,
+        message,
+        createdAt: new Date(),
+      },
+    });
 
-    const { data, error } = await supabase
-      .from("contacts")
-      .insert([
-        {
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          phone,
-          subject,
-          message,
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select();
-
-    if (error) {
-      console.error("Supabase insert error:", error);
-      return NextResponse.json({ error: "Failed to submit message." }, { status: 500 });
-    }
-
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(newMessage, { status: 201 });
   } catch (error) {
     console.error("Error submitting message:", error);
     return NextResponse.json({ error: "Failed to submit message." }, { status: 500 });

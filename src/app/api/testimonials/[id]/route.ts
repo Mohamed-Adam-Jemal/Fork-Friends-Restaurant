@@ -1,102 +1,92 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-// Helper to securely get user
+// Helper: check authentication (replace with your auth logic)
 async function checkUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error, supabase };
+  // Implement your authentication check here
+  // Example: return { user: { id: 1 } } if authenticated, null otherwise
+  return { user: { id: 1 } }; // placeholder
 }
 
 // GET — fetch a single testimonial (secured)
-export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
-  const { user, error, supabase } = await checkUser();
-  if (error || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await checkUser();
+  if (!auth?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const params = await context.params;
-  const id = Number(params.id);
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   try {
-    const { data, error: fetchError } = await supabase
-      .from("testimonials")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const testimonial = await prisma.testimonial.findUnique({
+      where: { id },
+    });
 
-    if (fetchError) {
-      if (fetchError.code === "PGRST116") {
-        return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
-      }
-      console.error("Fetch error:", fetchError);
-      return NextResponse.json({ error: "Failed to fetch testimonial" }, { status: 500 });
-    }
+    if (!testimonial) return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(testimonial, { status: 200 });
   } catch (err) {
-    console.error("GET error:", err);
+    console.error("GET testimonial error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 // PATCH — update testimonial (secured)
-export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
-  const { user, error, supabase } = await checkUser();
-  if (error || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await checkUser();
+  if (!auth?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const params = await context.params;
-  const id = Number(params.id);
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   try {
     const body = await req.json();
 
-    const { data, error: updateError } = await supabase
-      .from("testimonials")
-      .update(body)
-      .eq("id", id)
-      .select()
-      .single();
+    const updatedTestimonial = await prisma.testimonial.update({
+      where: { id },
+      data: body,
+    });
 
-    if (updateError) {
-      console.error("Update error:", updateError);
-      return NextResponse.json({ error: "Failed to update testimonial" }, { status: 500 });
+    return NextResponse.json(updatedTestimonial, { status: 200 });
+  } catch (err: any) {
+    console.error("PATCH testimonial error:", err);
+    if (err.code === "P2025") {
+      return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (err) {
-    console.error("PATCH error:", err);
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    return NextResponse.json({ error: "Failed to update testimonial" }, { status: 500 });
   }
 }
 
 // DELETE — delete testimonial (secured)
-export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
-  const { user, error, supabase } = await checkUser();
-  if (error || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await checkUser();
+  if (!auth?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const params = await context.params;
-  const id = Number(params.id);
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+  const resolvedParams = await params;
+  const id = Number(resolvedParams.id);
+  if (isNaN(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
-  const { error: deleteError } = await supabase.from("testimonials").delete().eq("id", id);
+  try {
+    await prisma.testimonial.delete({
+      where: { id },
+    });
 
-  if (deleteError) {
-    console.error("Delete error:", deleteError);
+    return NextResponse.json({ message: "Deleted successfully" }, { status: 200 });
+  } catch (err: any) {
+    console.error("DELETE testimonial error:", err);
+    if (err.code === "P2025") {
+      return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
+    }
     return NextResponse.json({ error: "Failed to delete testimonial" }, { status: 500 });
   }
-
-  return NextResponse.json({ message: "Deleted successfully" }, { status: 200 });
 }

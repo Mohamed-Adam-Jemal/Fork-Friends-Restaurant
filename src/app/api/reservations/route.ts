@@ -1,46 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
+import type { Table } from "@prisma/client";
 
-// Helper to get authenticated user
-async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user;
-}
-
-// GET: fetch all reservations (optionally filtered by date/time)
-export async function GET(request: NextRequest) {
+// ==============================
+// GET: fetch all reservations (PUBLIC)
+// ==============================
+export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const url = new URL(req.url);
+    const date = url.searchParams.get("date"); // 'YYYY-MM-DD'
+    const time = url.searchParams.get("time"); // 'HH:MM'
 
-    const supabase = await createClient();
-    const { searchParams } = new URL(request.url);
-    const date = searchParams.get("date");
-    const time = searchParams.get("time");
-
-    let query = supabase
-      .from("reservations")
-      .select(`
-        *,
-        table_id (
-          id,
-          table_number,
-          seats,
-          type,
-          availability
-        )
-      `)
-      .order("date", { ascending: true })
-      .order("time", { ascending: true });
-
-    if (date) query = query.eq("date", date);
-    if (time) query = query.eq("time", time);
-
-    const { data: reservations, error } = await query;
-
-    if (error) throw error;
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        ...(date && { date: new Date(date) }),
+        ...(time && { time }),
+      },
+      orderBy: [
+        { date: "asc" },
+        { time: "asc" },
+      ],
+      include: {
+        table: true,
+      },
+    });
 
     return NextResponse.json(reservations, { status: 200 });
   } catch (error) {
@@ -49,12 +33,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: create a new reservation with detailed error messages
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createClient();
-    const body = await request.json();
+// ==============================
+// POST: create a new reservation (PROTECTED)
+// ==============================
+export async function POST(req: NextRequest) {
+  // 🔐 Auth check
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
+  try {
+    const body = await req.json();
     const {
       firstName,
       lastName,
@@ -68,117 +56,84 @@ export async function POST(request: NextRequest) {
       seating,
     } = body;
 
-    // Required fields validation
+    // Validate required fields
     if (!firstName || !lastName || !email || !phone || !date || !time || !guests || !seating) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const guestCount = Number(guests);
-
-    // Date validation
+    const selectedDateTime = new Date(`${date}T${time}`);
     const now = new Date();
-    const selectedDateTime = new Date(`${date}T${time}`); // assuming time in "HH:MM" 24h format
-
     if (selectedDateTime <= now) {
       return NextResponse.json(
-        { error: "Invalid time", reason: "Cannot reserve a table in the past." },
+        { error: "Cannot reserve a table in the past." },
         { status: 400 }
       );
     }
 
-    // Check tables by seating type
-    const { data: tablesByType, error: tablesError } = await supabase
-      .from("tables")
-      .select("*")
-      .eq("type", seating);
-
-    if (tablesError) throw tablesError;
-
-    if (!tablesByType || tablesByType.length === 0) {
-      return NextResponse.json(
-        { error: "No tables of selected type", reason: `No ${seating} tables available` },
-        { status: 409 }
-      );
-    }
-
-    // Filter tables by number of seats
-    const suitableTables = tablesByType.filter(t => t.seats >= guestCount);
+    // Find tables matching seating type and enough seats
+    const suitableTables = await prisma.table.findMany({
+      where: {
+        type: seating,
+        seats: { gte: guestCount },
+      },
+    });
 
     if (suitableTables.length === 0) {
       return NextResponse.json(
-        { error: "No tables with enough seats", reason: `No ${seating} tables can accommodate ${guestCount} guests` },
+        { error: `No ${seating} tables can accommodate ${guestCount} guests` },
         { status: 409 }
       );
     }
 
-    // Check availability at the requested date/time
-    const { data: existingReservations, error: resError } = await supabase
-      .from("reservations")
-      .select("table_id")
-      .eq("date", date)
-      .eq("time", time)
-      .in("table_id", suitableTables.map(t => t.id));
-
-    if (resError) throw resError;
+    // Check table availability
+    const reservationsAtTime = await prisma.reservation.findMany({
+      where: {
+        date: new Date(date),
+        time,
+        tableId: { in: suitableTables.map((t: Table) => t.id) },
+      },
+      select: { tableId: true },
+    });
 
     const availableTables = suitableTables.filter(
-      t => !existingReservations?.some(r => r.table_id === t.id)
+      (t: Table) => !reservationsAtTime.some((r: { tableId: number; }) => r.tableId === t.id)
     );
 
     if (availableTables.length === 0) {
       return NextResponse.json(
-        {
-          error: "All tables booked",
-          reason: `All ${seating} tables for ${guestCount} guests are already reserved at ${time} on ${date}`
-        },
+        { error: `All ${seating} tables are already reserved at ${time} on ${date}` },
         { status: 409 }
       );
     }
 
-    // Choose the first available table
     const tableToReserve = availableTables[0];
 
-    // Insert reservation
-    const { data: reservation, error: insertError } = await supabase
-      .from("reservations")
-      .insert({
-        first_name: firstName,
-        last_name: lastName,
+    // Create reservation
+    const reservation = await prisma.reservation.create({
+      data: {
+        firstName,
+        lastName,
         email,
         phone,
-        date,
+        date: new Date(date),
         time,
         guests: guestCount,
-        special_requests: specialRequests ?? null,
+        specialRequests: specialRequests ?? null,
         occasion: occasion ?? null,
         seating,
-        table_id: tableToReserve.id,
-      })
-      .select(`
-        *,
-        table_id (
-          id,
-          table_number,
-          seats,
-          type,
-          availability
-        )
-      `)
-      .single();
+        tableId: tableToReserve.id,
+      },
+      include: { table: true },
+    });
 
-    if (insertError) throw insertError;
-
-    // Update table availability
-    await supabase
-      .from("tables")
-      .update({ availability: false })
-      .eq("id", tableToReserve.id);
+    // Optionally mark table as unavailable
+    await prisma.table.update({
+      where: { id: tableToReserve.id },
+      data: { availability: false },
+    });
 
     return NextResponse.json(reservation, { status: 201 });
-
   } catch (error: any) {
     console.error("Error creating reservation:", error);
     return NextResponse.json(

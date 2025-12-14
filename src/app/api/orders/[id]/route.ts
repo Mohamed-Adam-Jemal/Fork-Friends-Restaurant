@@ -1,111 +1,178 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+export const runtime = "nodejs";
 
-// Helper to get authenticated user
-async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user;
-}
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
 
-// GET single order
-export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// ==============================
+// GET single order (PUBLIC)
+// ==============================
+export async function GET(
+  _: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id, 10);
 
-  const supabase = await createClient();
-  const { id } = await params;
-
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(order, { status: 200 });
+  } catch (error) {
+    console.error("GET error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch order" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(order);
 }
 
-// PUT: update order (including status)
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// ==============================
+// PUT order (PROTECTED)
+// ==============================
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const supabase = await createClient();
-  const { id } = await params;
-  const body = await req.json();
-  const { name, email, phone, total, items, status } = body;
+  try {
+    const id = parseInt(params.id, 10);
+    const body = await req.json();
+    const { name, email, phone, address, total, items, status } = body;
 
-  const validStatus = status === 'In Progress' || status === 'Done' ? status : undefined;
+    const orderStatus =
+      status === "In Progress" || status === "Done" ? status : undefined;
 
-  const { data: updatedOrder, error } = await supabase
-    .from('orders')
-    .update({ name, email, phone, total, items, ...(validStatus && { status: validStatus }) })
-    .eq('id', id)
-    .select()
-    .single();
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        name,
+        email,
+        phone,
+        address,
+        total,
+        items,
+        ...(orderStatus && { status: orderStatus }),
+      },
+    });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json(updatedOrder);
+    return NextResponse.json(updatedOrder, { status: 200 });
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+    console.error("PUT error:", error);
+    return NextResponse.json(
+      { error: "Failed to update order" },
+      { status: 500 }
+    );
+  }
 }
 
-// DELETE order
-export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// ==============================
+// PATCH order (PROTECTED)
+// ==============================
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const supabase = await createClient();
-  const { id } = await params;
+  try {
+    const id = parseInt(params.id, 10);
+    const body = await req.json();
 
-  const { error } = await supabase.from('orders').delete().eq('id', id);
+    const allowedFields = [
+      "name",
+      "email",
+      "phone",
+      "address",
+      "total",
+      "items",
+      "status",
+    ];
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const updates: Record<string, any> = {};
 
-  return NextResponse.json({ message: 'Order deleted successfully' });
-}
-
-// PATCH: partially update order
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const supabase = await createClient();
-  const { id } = await params;
-  const body = await req.json();
-
-  const allowedFields = ['name', 'email', 'phone', 'total', 'items', 'status'];
-  const updates: Record<string, any> = {};
-
-  for (const key of allowedFields) {
-    if (body[key] !== undefined) {
-      if (key === 'status') {
-        if (body[key] === 'In Progress' || body[key] === 'Done') updates[key] = body[key];
-      } else {
-        updates[key] = body[key];
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) {
+        if (
+          key === "status" &&
+          (body[key] === "In Progress" || body[key] === "Done")
+        ) {
+          updates[key] = body[key];
+        } else if (key !== "status") {
+          updates[key] = body[key];
+        }
       }
     }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: "No valid fields provided for update" },
+        { status: 400 }
+      );
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: updates,
+    });
+
+    return NextResponse.json(updatedOrder, { status: 200 });
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+    console.error("PATCH error:", error);
+    return NextResponse.json(
+      { error: "Failed to update order" },
+      { status: 500 }
+    );
   }
+}
 
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No valid fields provided for update' }, { status: 400 });
+// ==============================
+// DELETE order (PROTECTED)
+// ==============================
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
+  try {
+    const id = parseInt(params.id, 10);
+
+    await prisma.order.delete({
+      where: { id },
+    });
+
+    return NextResponse.json(
+      { message: "Order deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+    console.error("DELETE error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete order" },
+      { status: 500 }
+    );
   }
-
-  const { data: updatedOrder, error } = await supabase
-    .from('orders')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json(updatedOrder);
 }

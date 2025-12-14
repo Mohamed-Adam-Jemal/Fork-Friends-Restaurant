@@ -1,27 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-
 export default async function AdminDashboardPage() {
-  const supabase = await createClient();
-
-  // Get the session first
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect('/login');
-
-  // Fetch the authenticated user from Supabase Auth server
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) redirect('/login'); // fallback if user info cannot be verified
-
-  const userEmail = user.email; // now this is verified
-
+ 
   return (
     <div className="space-y-10 px-6 sm:px-8 lg:px-12 py-8 overflow-y-auto bg-gray-50 min-h-screen rounded-3xl mt-6">
       {/* Welcome Header */}
       <div className="bg-[#C8AD82] rounded-lg p-6">
         <h1 className="text-2xl md:text-3xl font-bold !text-white break-words">
-          Logged with: {userEmail}
+          Welcome to Dashboard
         </h1>
-        <p className="text-white text-lg mt-1">Here’s the overview for today.</p>
+        <p className="text-white text-lg mt-1">Here's the overview for today.</p>
       </div>
 
       {/* Stats Cards */}

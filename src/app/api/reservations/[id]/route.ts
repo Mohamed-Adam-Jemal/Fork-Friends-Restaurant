@@ -1,145 +1,122 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
-// Helper to securely get the authenticated user
-async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user;
-}
-
-// Type for route context params
-interface RouteParams {
-  id: string;
-}
-
-// GET: Fetch a single reservation
+// ==============================
+// GET single reservation (PUBLIC)
+// ==============================
 export async function GET(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> }
-): Promise<NextResponse> {
-  const params = await context.params;
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const numericId = Number(params.id);
   if (isNaN(numericId)) {
-    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid reservation ID' }, { status: 400 });
   }
 
   try {
-    const user = await getAuthenticatedUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: numericId },
+      include: { table: true },
+    });
 
-    const supabase = await createClient();
-    const { data: reservation, error } = await supabase
-      .from("reservations")
-      .select("*")
-      .eq("id", numericId)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
-      }
-      throw error;
+    if (!reservation) {
+      return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
     }
 
     return NextResponse.json(reservation, { status: 200 });
   } catch (error) {
-    console.error("GET reservation error:", error);
-    return NextResponse.json({ error: "Failed to fetch reservation" }, { status: 500 });
+    console.error('GET reservation error:', error);
+    return NextResponse.json({ error: 'Failed to fetch reservation' }, { status: 500 });
   }
 }
 
-// PATCH: Update a reservation
+// ==============================
+// PATCH reservation (PROTECTED)
+// ==============================
 export async function PATCH(
   req: NextRequest,
-  context: { params: Promise<RouteParams> }
-): Promise<NextResponse> {
-  const params = await context.params;
+  { params }: { params: { id: string } }
+) {
+  // 🔐 Auth check
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
   const numericId = Number(params.id);
   if (isNaN(numericId)) {
-    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid reservation ID' }, { status: 400 });
   }
 
   try {
-    const user = await getAuthenticatedUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const body = await req.json();
-    const updates: Record<string, any> = {};
+    const updates: any = {};
 
-    if ("firstName" in body) updates.first_name = body.firstName;
-    if ("lastName" in body) updates.last_name = body.lastName;
-    if ("email" in body) updates.email = body.email;
-    if ("phone" in body) updates.phone = body.phone;
-    if ("date" in body) updates.date = body.date;
-    if ("time" in body) updates.time = body.time;
-    if ("guests" in body) updates.guests = Number(body.guests);
-    if ("specialRequests" in body) updates.special_requests = body.specialRequests;
-    if ("occasion" in body) updates.occasion = body.occasion;
-    if ("seating" in body) updates.seating = body.seating;
-    if ("tableId" in body) updates.table_id = Number(body.tableId);
+    if ('firstName' in body) updates.firstName = body.firstName;
+    if ('lastName' in body) updates.lastName = body.lastName;
+    if ('email' in body) updates.email = body.email;
+    if ('phone' in body) updates.phone = body.phone;
+    if ('date' in body) updates.date = new Date(body.date);
+    if ('time' in body) updates.time = body.time;
+    if ('guests' in body) updates.guests = Number(body.guests);
+    if ('specialRequests' in body) updates.specialRequests = body.specialRequests ?? null;
+    if ('occasion' in body) updates.occasion = body.occasion ?? null;
+    if ('seating' in body) updates.seating = body.seating;
+    if ('tableId' in body) updates.tableId = Number(body.tableId);
 
-    const supabase = await createClient();
-    const { data: updatedReservation, error } = await supabase
-      .from("reservations")
-      .update(updates)
-      .eq("id", numericId)
-      .select()
-      .single();
-
-    if (error) throw error;
+    const updatedReservation = await prisma.reservation.update({
+      where: { id: numericId },
+      data: updates,
+      include: { table: true },
+    });
 
     return NextResponse.json(updatedReservation, { status: 200 });
-  } catch (error) {
-    console.error("PATCH reservation error:", error);
-    return NextResponse.json({ error: "Failed to update reservation" }, { status: 500 });
+  } catch (error: any) {
+    console.error('PATCH reservation error:', error);
+    return NextResponse.json(
+      { error: 'Failed to update reservation', reason: error.message },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE: Delete a reservation and free the table
+// ==============================
+// DELETE reservation (PROTECTED)
+// ==============================
 export async function DELETE(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> }
-): Promise<NextResponse> {
-  const params = await context.params;
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  // 🔐 Auth check
+  const authCheck = requireAuth(_req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
   const numericId = Number(params.id);
   if (isNaN(numericId)) {
-    return NextResponse.json({ error: "Invalid reservation ID" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid reservation ID' }, { status: 400 });
   }
 
   try {
-    const user = await getAuthenticatedUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: numericId },
+    });
 
-    const supabase = await createClient();
-
-    const { data: reservation, error: fetchError } = await supabase
-      .from("reservations")
-      .select("table_id")
-      .eq("id", numericId)
-      .single();
-
-    if (fetchError) {
-      if (fetchError.code === "PGRST116") {
-        return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
-      }
-      throw fetchError;
+    if (!reservation) {
+      return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
     }
 
-    const { error: deleteError } = await supabase.from("reservations").delete().eq("id", numericId);
-    if (deleteError) throw deleteError;
+    await prisma.reservation.delete({ where: { id: numericId } });
 
-    const { error: updateTableError } = await supabase
-      .from("tables")
-      .update({ availability: true })
-      .eq("id", reservation.table_id);
+    // Update table availability
+    if (reservation.tableId) {
+      await prisma.table.update({
+        where: { id: reservation.tableId },
+        data: { availability: true },
+      });
+    }
 
-    if (updateTableError) console.error("Failed to update table availability:", updateTableError);
-
-    return NextResponse.json({ message: "Deleted reservation and freed table" }, { status: 200 });
+    return NextResponse.json({ message: 'Deleted reservation and freed table' }, { status: 200 });
   } catch (error) {
-    console.error("DELETE reservation error:", error);
-    return NextResponse.json({ error: "Failed to delete reservation" }, { status: 500 });
+    console.error('DELETE reservation error:', error);
+    return NextResponse.json({ error: 'Failed to delete reservation' }, { status: 500 });
   }
 }

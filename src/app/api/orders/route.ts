@@ -1,50 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
-// Helper to get authenticated user
-async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user;
-}
-
-// GET: fetch all orders (secured)
+// ==============================
+// GET: fetch all orders (PUBLIC)
+// ==============================
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const supabase = await createClient();
-
-    // Get date query parameter
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date'); // expected format: 'YYYY-MM-DD'
 
-    let query = supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let whereClause: any = {};
 
     if (date) {
-      // Filter by only the date part of created_at
-      query = query.eq('created_at::date', date); // works for PostgreSQL
+      // Filter by date (only the date part of createdAt)
+      whereClause = {
+        createdAt: {
+          gte: new Date(date + 'T00:00:00.000Z'),
+          lt: new Date(date + 'T23:59:59.999Z'),
+        },
+      };
     }
 
-    const { data: orders, error } = await query;
-    if (error) throw error;
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json(orders, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error('GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 }
 
-// POST: create new order (open)
+// ==============================
+// POST: create new order (PROTECTED)
+// ==============================
 export async function POST(req: NextRequest) {
+  // 🔐 Auth check
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
   try {
-    const supabase = await createClient();
     const body = await req.json();
     const { name, email, phone, address, total, items, status } = body;
 
@@ -58,28 +56,21 @@ export async function POST(req: NextRequest) {
     const orderStatus =
       status && (status === 'In Progress' || status === 'Done') ? status : 'In Progress';
 
-    const { data: newOrder, error } = await supabase
-      .from('orders')
-      .insert([
-        {
-          name,
-          email,
-          phone,
-          address,
-          total,
-          items,
-          status: orderStatus,
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) throw error;
+    const newOrder = await prisma.order.create({
+      data: {
+        name,
+        email,
+        phone,
+        address,
+        total,
+        items,
+        status: orderStatus,
+      },
+    });
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error('POST error:', error);
     return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 }

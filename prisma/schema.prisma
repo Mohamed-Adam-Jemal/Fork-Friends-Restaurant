@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String
+  phone     String
+  subject   String
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("contacts")
+}
+
+model MenuItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  description String?
+  price     Float
+  image     String?
+  category  String?
+  cuisine   String?
+  featured  Boolean @default(false)
+  chefChoice Boolean @default(false) @map("chef_choice")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("menu_items")
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String
+  address   String
+  total     Float
+  items     Json
+  status    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("orders")
+}
+
+model Reservation {
+  id              Int     @id @default(autoincrement())
+  firstName       String  @map("first_name")
+  lastName        String  @map("last_name")
+  email           String
+  phone           String
+  date            DateTime
+  time            String
+  guests          Int
+  specialRequests String? @map("special_requests")
+  occasion        String?
+  seating         String?
+  tableId         Int     @map("table_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  table           Table   @relation(fields: [tableId], references: [id])
+
+  @@map("reservations")
+}
+
+model Table {
+  id          Int       @id @default(autoincrement())
+  tableNumber Int       @unique @map("table_number")
+  seats       Int
+  type        String
+  availability Boolean  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at")
+  reservations Reservation[]
+  @@map("tables")
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  photo     String?
+  rating    Decimal
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("testimonials")
+}
+
+model Team {
+  id     Int     @id @default(autoincrement())
+  name   String
+  email  String  @unique
+  phone  String?
+  role   String
+  quote  String?
+  image  String?
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

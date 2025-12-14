@@ -16,10 +16,8 @@ import {
   FaQuoteRight,
 } from "react-icons/fa";
 
-import { supabase } from "@/lib/supabaseClient";
-import Spinner from "@/components/ui/Spinner";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { FaNoteSticky} from "react-icons/fa6";
+import { FaNoteSticky } from "react-icons/fa6";
 import Image from "next/image";
 
 const navLinks = [
@@ -28,14 +26,14 @@ const navLinks = [
   { href: "/admin/menu", label: "Menu", icon: <FaUtensils /> },
   { href: "/admin/reservations", label: "Reservations", icon: <FaCalendarAlt /> },
   { href: "/admin/orders", label: "Orders", icon: <FaClipboardList /> },
-  { href: "/admin/tables", label: "Tables", icon: <FaTable/> },
-  { href: "/admin/testimonials", label: "Testimonials", icon: <FaQuoteRight size={22}/> },
-  { href: "/admin/contact", label: "Contact", icon: <FaNoteSticky/> },
+  { href: "/admin/tables", label: "Tables", icon: <FaTable /> },
+  { href: "/admin/testimonials", label: "Testimonials", icon: <FaQuoteRight size={22} /> },
+  { href: "/admin/contact", label: "Contact", icon: <FaNoteSticky /> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const pathname = usePathname();
@@ -43,13 +41,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   async function handleSignOut() {
     setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    setLoading(false);
-    setLogoutConfirmOpen(false);
-    if (error) {
-      console.error("Error signing out:", error.message);
-    } else {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+
+      setLogoutConfirmOpen(false);
       router.push("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setLoading(false);
     }
   }
 
@@ -57,34 +62,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-col md:flex-row min-h-screen">
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 z-50 bg-white text-white flex items-center justify-between px-4 py-3 shadow-md">
-          {/* Left: Logo */}
-          <div className="flex items-center space-x-5">
-            <Image
-              src="/logos/FnF_Logo.png"
-              alt="Fork & Friends logo"
-              width={48}
-              height={48}
-              className="drop-shadow-md rounded-full"
-              priority
-            />
-          </div>
+        {/* Left: Logo */}
+        <div className="flex items-center space-x-5">
+          <Image
+            src="/logos/FnF_Logo.png"
+            alt="Fork & Friends logo"
+            width={48}
+            height={48}
+            className="drop-shadow-md rounded-full"
+            priority
+          />
+        </div>
 
-          <div className="rounded-full bg-[#C8AD82] p-3">
-            <h2 className="text-lg font-bold tracking-wide !text-white">Admin Panel</h2>
-          </div>
+        <div className="rounded-full bg-[#C8AD82] p-3">
+          <h2 className="text-lg font-bold tracking-wide !text-white">Admin Panel</h2>
+        </div>
 
-          {/* Right: Sidebar Toggle Button */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle Sidebar"
-            className="p-2 rounded-md text-[#B3905E] transition-colors"
-          >
-            {sidebarOpen ? (
-              <FaTimes className="text-2xl" />
-            ) : (
-              <FaBars className="text-2xl" />
-            )}
-          </button>
+        {/* Right: Sidebar Toggle Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle Sidebar"
+          className="p-2 rounded-md text-[#B3905E] transition-colors"
+        >
+          {sidebarOpen ? (
+            <FaTimes className="text-2xl" />
+          ) : (
+            <FaBars className="text-2xl" />
+          )}
+        </button>
       </header>
 
       {/* Sidebar */}

@@ -1,101 +1,86 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
 
-// Helper to get authenticated user and Supabase client
-async function getAuthenticatedUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (!user) return null;
-  return { user, supabase };
-}
-
-// GET: fetch single team member by ID (open)
+// GET: fetch single team member by ID (protected)
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const supabase = await createClient();
-  const resolvedParams = await params;
-  const id = Number(resolvedParams.id);
+  const { id } = await params;
+  const memberId = Number(id);
+  if (isNaN(memberId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  try {
+    const member = await prisma.team.findUnique({ where: { id: memberId } });
+    if (!member) return NextResponse.json({ error: "Team member not found" }, { status: 404 });
+
+    return NextResponse.json(member, { status: 200 });
+  } catch (err) {
+    console.error("GET team member error:", err);
+    return NextResponse.json({ error: "Failed to fetch team member" }, { status: 500 });
   }
-
-  const { data, error } = await supabase.from("team").select("*").eq("id", id).single();
-
-  if (error || !data) {
-    console.error("Error fetching team member:", error);
-    return NextResponse.json({ error: "Team member not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(data);
 }
 
-// PUT: update team member (secured)
+// PUT: update team member (protected)
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await getAuthenticatedUser();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const resolvedParams = await params;
-  const id = Number(resolvedParams.id);
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+  const { id } = await params;
+  const memberId = Number(id);
+  if (isNaN(memberId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   try {
     const body = await req.json();
-    const { data, error } = await auth.supabase
-      .from("team")
-      .update({
+
+    const updatedMember = await prisma.team.update({
+      where: { id: memberId },
+      data: {
         name: body.name,
         email: body.email,
-        phone: body.phone,
+        phone: body.phone ?? null,
         role: body.role,
-        quote: body.quote,
-        image: body.image,
-      })
-      .eq("id", id)
-      .select()
-      .single();
+        quote: body.quote ?? null,
+        image: body.image ?? null,
+      },
+    });
 
-    if (error) {
-      console.error("Update error:", error);
-      return NextResponse.json({ error: "Failed to update team member" }, { status: 500 });
+    return NextResponse.json(updatedMember, { status: 200 });
+  } catch (err: any) {
+    console.error("PUT team member error:", err);
+
+    if (err.code === "P2002" && err.meta?.target?.includes("email")) {
+      return NextResponse.json({ error: "Email already exists" }, { status: 409 });
     }
 
-    return NextResponse.json(data);
-  } catch (err) {
-    console.error("PUT error:", err);
-    return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    return NextResponse.json({ error: "Failed to update team member" }, { status: 500 });
   }
 }
 
-// DELETE: delete team member (secured)
+// DELETE: delete team member (protected)
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await getAuthenticatedUser();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
-  const resolvedParams = await params;
-  const id = Number(resolvedParams.id);
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+  const { id } = await params;
+  const memberId = Number(id);
+  if (isNaN(memberId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
-  const { error } = await auth.supabase.from("team").delete().eq("id", id);
-
-  if (error) {
-    console.error("Delete error:", error);
+  try {
+    await prisma.team.delete({ where: { id: memberId } });
+    return NextResponse.json({ message: "Team member deleted successfully" }, { status: 200 });
+  } catch (err) {
+    console.error("DELETE team member error:", err);
     return NextResponse.json({ error: "Failed to delete team member" }, { status: 500 });
   }
-
-  return NextResponse.json({ message: "Team member deleted successfully" });
 }

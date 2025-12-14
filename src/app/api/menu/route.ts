@@ -1,31 +1,31 @@
-// app/api/menu/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+export const runtime = "nodejs";
 
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
+
+// GET all menu items (PUBLIC)
 export async function GET(req: NextRequest) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('menu_items')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const items = await prisma.menuItem.findMany({
+      orderBy: { createdAt: "desc" },
+    });
 
-  if (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
+    return NextResponse.json(items);
+  } catch (error) {
+    console.error("GET error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch menu items" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(data);
 }
 
+// POST new menu items (PROTECTED)
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-
-  // Verify the user session
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // Auth check here
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
 
   try {
     const body = await req.json();
@@ -35,35 +35,37 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       if (!item.name || !item.price || !item.category) {
         return NextResponse.json(
-          { error: 'Each item must have name, price, and category' },
+          { error: "Each item must have name, price, and category" },
           { status: 400 }
         );
       }
     }
 
-    const { data, error } = await supabase
-      .from('menu_items')
-      .insert(
-        items.map((item) => ({
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          image: item.image || '',
-          category: item.category,
-          cuisine: item.cuisine || '',
-          featured: item.featured ?? false,
-          chef_choice: item.chefChoice ?? false,
-        }))
-      );
+    const createdItems = await prisma.menuItem.createMany({
+      data: items.map((item) => ({
+        name: item.name,
+        description: item.description ?? null,
+        price: item.price,
+        image: item.image ?? null,
+        category: item.category,
+        cuisine: item.cuisine ?? null,
+        featured: item.featured ?? false,
+        chefChoice: item.chefChoice ?? false,
+      })),
+    });
 
-    if (error) {
-      console.error(error);
-      return NextResponse.json({ error: 'Failed to create menu items' }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: 'Menu items added successfully', data }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "Menu items added successfully",
+        count: createdItems.count,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('POST error:', error);
-    return NextResponse.json({ error: 'Invalid request format' }, { status: 500 });
+    console.error("POST error:", error);
+    return NextResponse.json(
+      { error: "Invalid request format" },
+      { status: 500 }
+    );
   }
 }

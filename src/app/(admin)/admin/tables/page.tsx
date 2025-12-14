@@ -12,11 +12,11 @@ import { FiX } from 'react-icons/fi';
 
 type Table = {
   id: number;
-  table_number: number;
+  tableNumber: number;
   seats: number;
   type: string;
   availability: boolean;
-  created_at: string;
+  createdAt: string;
 };
 
 export default function TablesPage() {
@@ -36,14 +36,12 @@ export default function TablesPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   type FormData = {
-    table_number: number;
     seats: number;
     type: string;
     availability: boolean;
   };
 
   const [formData, setFormData] = useState<FormData>({
-    table_number: 0,
     seats: 0,
     type: '',
     availability: true,
@@ -73,7 +71,7 @@ export default function TablesPage() {
 
   useEffect(() => {
     const filtered = tables.filter((table) => {
-      const matchesTable = table.table_number
+      const matchesTable = table.tableNumber
         .toString()
         .includes(searchTableNum.trim());
 
@@ -93,8 +91,6 @@ export default function TablesPage() {
 
     setFilteredTables(filtered);
   }, [tables, searchTableNum, searchSeats, searchAvailability]);
-
-
 
   const deleteTable = async (id: number) => {
     setDeletingId(id);
@@ -136,7 +132,6 @@ export default function TablesPage() {
     if (table) {
       setEditingTable(table);
       setFormData({
-        table_number: table.table_number,
         seats: table.seats,
         type: table.type,
         availability: table.availability,
@@ -144,7 +139,6 @@ export default function TablesPage() {
     } else {
       setEditingTable(null);
       setFormData({
-        table_number: 0,
         seats: 0,
         type: '',
         availability: true,
@@ -191,13 +185,12 @@ export default function TablesPage() {
   return (
     <main className="p-6 max-w-6xl mx-auto">
 
-        <button
+      <button
         onClick={() => openEditForm(null)}
-        className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2 cursor-pointer"
+        className="mb-6 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition cursor-pointer flex items-center gap-2"
       >
         <PlusCircle size={23} /> Add new table
       </button>
-
 
       <FilteringBar className="w-full mb-6 flex flex-col sm:flex-row gap-4">
         <input
@@ -234,8 +227,6 @@ export default function TablesPage() {
           listClassName="w-full"
         />
       </FilteringBar>
-      
-
 
       {loading ? (
         <div className="flex justify-center items-center h-96">
@@ -252,7 +243,7 @@ export default function TablesPage() {
                 <div className="relative flex flex-row justify-between items-start">
                   <div>
                     <h2 className="!text-xl font-semibold text-[#B3905E] mb-2">
-                      Table {table.table_number}
+                      Table {table.tableNumber}
                     </h2>
                     <p className="!text-sm text-gray-600 mb-1">
                       <span className="font-semibold">Seats:</span> {table.seats}
@@ -261,7 +252,7 @@ export default function TablesPage() {
                       <span className="font-semibold">Type:</span> {table.type}
                     </p>
                     <span className="text-xs text-gray-400">
-                      Created: {new Date(table.created_at).toLocaleString()}
+                      Created: {new Date(table.createdAt).toLocaleString()}
                     </span>
                   </div>
                   <span
@@ -347,18 +338,18 @@ export default function TablesPage() {
             </label>
 
             <label className="block mb-4 font-semibold">
-            Table Type <span className="text-red-500">*</span>
-            <div className="mt-1">
-              <Dropdown
-                label="Select type"
-                options={["Indoor", "Outdoor"]}
-                selected={formData.type}
-                onSelect={(value) => setFormData({ ...formData, type: value || "" })}
-                buttonClassName="w-full border border-gray-300 rounded-xl px-4 py-2 text-left focus:outline-none focus:ring-2 focus:ring-[#B3905E]"
-                listClassName="w-full"
-              />
-            </div>
-          </label>
+              Table Type <span className="text-red-500">*</span>
+              <div className="mt-1">
+                <Dropdown
+                  label="Select type"
+                  options={["Indoor", "Outdoor"]}
+                  selected={formData.type}
+                  onSelect={(value) => setFormData({ ...formData, type: value || "" })}
+                  buttonClassName="w-full border border-gray-300 rounded-xl px-4 py-2 text-left focus:outline-none focus:ring-2 focus:ring-[#B3905E]"
+                  listClassName="w-full"
+                />
+              </div>
+            </label>
 
             <label className="flex items-center cursor-pointer select-none mb-4">
               <input
