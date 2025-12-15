@@ -9,20 +9,17 @@ export const runtime = "nodejs";
 // ==============================
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
-
     const item = await prisma.menuItem.findUnique({ where: { id } });
-
     if (!item) {
       return NextResponse.json({ error: "Menu item not found" }, { status: 404 });
     }
-
     return NextResponse.json(item);
   } catch (error) {
     console.error("GET error:", error);
@@ -35,24 +32,21 @@ export async function GET(
 // ==============================
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
-
     const updates = await request.json();
-
     const updatedItem = await prisma.menuItem.update({
       where: { id },
       data: updates,
     });
-
     return NextResponse.json(updatedItem);
   } catch (error) {
     console.error("PATCH error:", error);
@@ -65,19 +59,17 @@ export async function PATCH(
 // ==============================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
-
     await prisma.menuItem.delete({ where: { id } });
-
     return NextResponse.json({ message: "Menu item deleted successfully" });
   } catch (error) {
     console.error("DELETE error:", error);

@@ -4,147 +4,120 @@ import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
-// ==============================
-// GET single order (PUBLIC)
-// ==============================
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-    }
-
-    const order = await prisma.order.findUnique({ where: { id } });
-
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(order);
-  } catch (error) {
-    console.error("GET error:", error);
-    return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
-  }
-}
-
-// ==============================
-// PUT order (PROTECTED)
-// ==============================
-export async function PUT(
+async function handler(
+  method: string,
   req: NextRequest,
-  { params }: { params: { id: string } }
+  params: { id: string }
 ) {
-  const authCheck = requireAuth(req);
-  if (authCheck instanceof NextResponse) return authCheck;
+  const id = parseInt(params.id, 10);
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    switch (method) {
+      case "GET":
+        return await handleGET(id);
+      case "PUT":
+        return await handlePUT(req, id);
+      case "PATCH":
+        return await handlePATCH(req, id);
+      case "DELETE":
+        return await handleDELETE(id, req);
+      default:
+        return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
     }
-
-    const body = await req.json();
-    const { name, email, phone, address, total, items, status } = body;
-
-    const orderStatus =
-      status === "In Progress" || status === "Done" ? status : undefined;
-
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: {
-        name,
-        email,
-        phone,
-        address,
-        total,
-        items,
-        ...(orderStatus && { status: orderStatus }),
-      },
-    });
-
-    return NextResponse.json(updatedOrder);
   } catch (error: any) {
+    console.error(`${method} error:`, error);
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
-    console.error("PUT error:", error);
-    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    return NextResponse.json({ error: `Failed to ${method.toLowerCase()} order` }, { status: 500 });
   }
 }
 
-// ==============================
-// PATCH order (PROTECTED)
-// ==============================
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handleGET(id: number) {
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+  return NextResponse.json(order);
+}
+
+async function handlePUT(req: NextRequest, id: number) {
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-    }
+  const body = await req.json();
+  const { name, email, phone, address, total, items, status } = body;
 
-    const body = await req.json();
-    const allowedFields = ["name", "email", "phone", "address", "total", "items", "status"];
-    const updates: Record<string, any> = {};
+  const orderStatus =
+    status === "In Progress" || status === "Done" ? status : undefined;
 
-    for (const key of allowedFields) {
-      if (body[key] !== undefined) {
-        if (key === "status" && (body[key] === "In Progress" || body[key] === "Done")) {
-          updates[key] = body[key];
-        } else if (key !== "status") {
-          updates[key] = body[key];
-        }
+  const updatedOrder = await prisma.order.update({
+    where: { id },
+    data: {
+      name,
+      email,
+      phone,
+      address,
+      total,
+      items,
+      ...(orderStatus && { status: orderStatus }),
+    },
+  });
+
+  return NextResponse.json(updatedOrder);
+}
+
+async function handlePATCH(req: NextRequest, id: number) {
+  const authCheck = requireAuth(req);
+  if (authCheck instanceof NextResponse) return authCheck;
+
+  const body = await req.json();
+  const allowedFields = ["name", "email", "phone", "address", "total", "items", "status"];
+  const updates: Record<string, any> = {};
+
+  for (const key of allowedFields) {
+    if (body[key] !== undefined) {
+      if (key === "status" && (body[key] === "In Progress" || body[key] === "Done")) {
+        updates[key] = body[key];
+      } else if (key !== "status") {
+        updates[key] = body[key];
       }
     }
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
-    }
-
-    const updatedOrder = await prisma.order.update({ where: { id }, data: updates });
-
-    return NextResponse.json(updatedOrder);
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-    console.error("PATCH error:", error);
-    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
+  }
+
+  const updatedOrder = await prisma.order.update({ where: { id }, data: updates });
+
+  return NextResponse.json(updatedOrder);
 }
 
-// ==============================
-// DELETE order (PROTECTED)
-// ==============================
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handleDELETE(id: number, req: NextRequest) {
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-    }
+  await prisma.order.delete({ where: { id } });
 
-    await prisma.order.delete({ where: { id } });
+  return NextResponse.json({ message: "Order deleted successfully" });
+}
 
-    return NextResponse.json({ message: "Order deleted successfully" });
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-    console.error("DELETE error:", error);
-    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
-  }
+export async function GET(req: NextRequest, { params }: any) {
+  return handler("GET", req, params);
+}
+
+export async function PUT(req: NextRequest, { params }: any) {
+  return handler("PUT", req, params);
+}
+
+export async function PATCH(req: NextRequest, { params }: any) {
+  return handler("PATCH", req, params);
+}
+
+export async function DELETE(req: NextRequest, { params }: any) {
+  return handler("DELETE", req, params);
 }

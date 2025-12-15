@@ -1,14 +1,9 @@
-// src/app/api/tables/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 
 // GET: fetch table by ID (public)
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const tableId = parseInt(params.id);
+async function handleGET(tableId: number) {
   if (isNaN(tableId)) {
     return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
   }
@@ -25,14 +20,10 @@ export async function GET(
 }
 
 // PATCH: partial update (protected)
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handlePATCH(req: NextRequest, tableId: number) {
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const tableId = parseInt(params.id);
   if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
 
   try {
@@ -60,14 +51,10 @@ export async function PATCH(
 }
 
 // PUT: full update (protected)
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handlePUT(req: NextRequest, tableId: number) {
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const tableId = parseInt(params.id);
   if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
 
   try {
@@ -94,14 +81,10 @@ export async function PUT(
 }
 
 // DELETE: remove table (protected)
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const authCheck = requireAuth(_req);
+async function handleDELETE(req: NextRequest, tableId: number) {
+  const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const tableId = parseInt(params.id);
   if (isNaN(tableId)) return NextResponse.json({ error: "Invalid table ID" }, { status: 400 });
 
   try {
@@ -111,4 +94,25 @@ export async function DELETE(
     console.error(err);
     return NextResponse.json({ error: err.message || "Failed to delete table" }, { status: 500 });
   }
+}
+
+// Exported route handlers
+export async function GET(_req: NextRequest, { params }: any) {
+  const tableId = parseInt(params.id);
+  return handleGET(tableId);
+}
+
+export async function PATCH(req: NextRequest, { params }: any) {
+  const tableId = parseInt(params.id);
+  return handlePATCH(req, tableId);
+}
+
+export async function PUT(req: NextRequest, { params }: any) {
+  const tableId = parseInt(params.id);
+  return handlePUT(req, tableId);
+}
+
+export async function DELETE(req: NextRequest, { params }: any) {
+  const tableId = parseInt(params.id);
+  return handleDELETE(req, tableId);
 }

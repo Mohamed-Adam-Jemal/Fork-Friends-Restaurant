@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const existingTables = await prisma.table.findMany({
       select: { tableNumber: true },
     });
-    const existingNumbers = existingTables.map((t) => t.tableNumber);
+    const existingNumbers = existingTables.map((t: { tableNumber: number }) => t.tableNumber);
 
     // Assign unique table numbers
     const tablesToInsert = tablesArray.map((table) => {

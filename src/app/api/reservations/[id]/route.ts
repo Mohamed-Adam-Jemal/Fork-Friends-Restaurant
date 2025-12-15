@@ -31,11 +31,7 @@ function formatReservation(reservation: any) {
 // ==============================
 // GET single reservation (PUBLIC)
 // ==============================
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const numericId = Number(params.id);
+async function handleGET(numericId: number) {
   if (isNaN(numericId)) {
     return NextResponse.json(
       { error: 'Invalid reservation ID' },
@@ -69,15 +65,11 @@ export async function GET(
 // ==============================
 // PATCH reservation (PROTECTED)
 // ==============================
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handlePATCH(req: NextRequest, numericId: number) {
   // 🔐 Auth check
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const numericId = Number(params.id);
   if (isNaN(numericId)) {
     return NextResponse.json(
       { error: 'Invalid reservation ID' },
@@ -232,15 +224,11 @@ export async function PATCH(
 // ==============================
 // DELETE reservation (PROTECTED)
 // ==============================
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function handleDELETE(req: NextRequest, numericId: number) {
   // 🔐 Auth check
-  const authCheck = requireAuth(_req);
+  const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const numericId = Number(params.id);
   if (isNaN(numericId)) {
     return NextResponse.json(
       { error: 'Invalid reservation ID' },
@@ -282,4 +270,20 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+// Exported route handlers
+export async function GET(_req: NextRequest, { params }: any) {
+  const numericId = Number(params.id);
+  return handleGET(numericId);
+}
+
+export async function PATCH(req: NextRequest, { params }: any) {
+  const numericId = Number(params.id);
+  return handlePATCH(req, numericId);
+}
+
+export async function DELETE(req: NextRequest, { params }: any) {
+  const numericId = Number(params.id);
+  return handleDELETE(req, numericId);
 }
