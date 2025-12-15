@@ -9,18 +9,18 @@ import { requireAuth } from "@/lib/auth";
 // ==============================
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   // 🔐 Auth check
-  const authCheck = requireAuth(request);
+  const authCheck = await requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  try {
-    const id = params.id;
-    if (!id) {
-      return NextResponse.json({ error: "ID is required." }, { status: 400 });
-    }
+  const id = params.id;
+  if (!id) {
+    return NextResponse.json({ error: "ID is required." }, { status: 400 });
+  }
 
+  try {
     const contact = await prisma.contact.findUnique({
       where: { id },
     });
@@ -41,18 +41,17 @@ export async function GET(
 // ==============================
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
-  // 🔐 Auth check
-  const authCheck = requireAuth(request);
+  const authCheck = await requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  try {
-    const id = params.id;
-    if (!id) {
-      return NextResponse.json({ error: "ID is required." }, { status: 400 });
-    }
+  const id = params.id;
+  if (!id) {
+    return NextResponse.json({ error: "ID is required." }, { status: 400 });
+  }
 
+  try {
     const updates = await request.json();
 
     const updatedContact = await prisma.contact.update({
@@ -72,18 +71,17 @@ export async function PATCH(
 // ==============================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
-  // 🔐 Auth check
-  const authCheck = requireAuth(request);
+  const authCheck = await requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  try {
-    const id = params.id;
-    if (!id) {
-      return NextResponse.json({ error: "ID is required." }, { status: 400 });
-    }
+  const id = params.id;
+  if (!id) {
+    return NextResponse.json({ error: "ID is required." }, { status: 400 });
+  }
 
+  try {
     await prisma.contact.delete({
       where: { id },
     });
