@@ -1,29 +1,29 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
+// Type for the route context
+interface RouteContext {
+  params: { id: string };
+}
+
 // ==============================
 // GET contact by ID (PROTECTED)
 // ==============================
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
-  // 🔐 Auth check
-  const authCheck = await requireAuth(request);
+export async function GET(request: NextRequest, context: RouteContext) {
+  const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const id = params.id;
-  if (!id) {
-    return NextResponse.json({ error: "ID is required." }, { status: 400 });
-  }
-
   try {
-    const contact = await prisma.contact.findUnique({
-      where: { id },
-    });
+    const { id } = context.params;
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required." }, { status: 400 });
+    }
+
+    const contact = await prisma.contact.findUnique({ where: { id } });
 
     if (!contact) {
       return NextResponse.json({ error: "Message not found." }, { status: 404 });
@@ -36,22 +36,16 @@ export async function GET(
   }
 }
 
-// ==============================
-// PATCH contact by ID (PROTECTED)
-// ==============================
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
-  const authCheck = await requireAuth(request);
+// PATCH contact by ID
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const id = params.id;
-  if (!id) {
-    return NextResponse.json({ error: "ID is required." }, { status: 400 });
-  }
-
   try {
+    const { id } = context.params;
+
+    if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
+
     const updates = await request.json();
 
     const updatedContact = await prisma.contact.update({
@@ -66,25 +60,17 @@ export async function PATCH(
   }
 }
 
-// ==============================
-// DELETE contact by ID (PROTECTED)
-// ==============================
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
-  const authCheck = await requireAuth(request);
+// DELETE contact by ID
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
-  const id = params.id;
-  if (!id) {
-    return NextResponse.json({ error: "ID is required." }, { status: 400 });
-  }
-
   try {
-    await prisma.contact.delete({
-      where: { id },
-    });
+    const { id } = context.params;
+
+    if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
+
+    await prisma.contact.delete({ where: { id } });
 
     return NextResponse.json({ message: "Message deleted successfully." }, { status: 200 });
   } catch (error) {
