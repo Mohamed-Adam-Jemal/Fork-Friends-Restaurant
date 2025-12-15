@@ -35,12 +35,9 @@ export async function GET(req: NextRequest) {
 }
 
 // ==============================
-// POST: create new order (PROTECTED)
+// POST: create new order 
 // ==============================
 export async function POST(req: NextRequest) {
-  // 🔐 Auth check
-  const authCheck = requireAuth(req);
-  if (authCheck instanceof NextResponse) return authCheck;
 
   try {
     const body = await req.json();

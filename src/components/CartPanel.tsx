@@ -7,8 +7,8 @@ import { useCart } from "@/context/CartContext";
 import { Trash2 } from "lucide-react";
 import Button from "./ui/Button";
 import Checkbox from "./ui/Checkbox";
-import { FiX } from "react-icons/fi";
 import { Minus, Plus } from "lucide-react";
+import { FiX } from "react-icons/fi";
 
 interface CartPanelProps {
   isOpen: boolean;
@@ -28,12 +28,12 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
   const [acceptPolicy, setAcceptPolicy] = useState(false);
 
   const [invalidFields, setInvalidFields] = useState({
-  name: false,
-  email: false,
-  phone: false,
-  address: false,
-  acceptPolicy: false,
-});
+    name: false,
+    email: false,
+    phone: false,
+    address: false,
+    acceptPolicy: false,
+  });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,44 +56,39 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
     setLoading(true);
     setError(null);
 
+    // Validate form fields
+    const newInvalidFields = {
+      name: !name.trim(),
+      email: !email.trim(),
+      phone: !phone.trim(),
+      address: !address.trim(),
+      acceptPolicy: !acceptPolicy,
+    };
+    setInvalidFields(newInvalidFields);
+
+    if (Object.values(newInvalidFields).some((v) => v)) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      // ✅ Validate form fields
-      if (e) e.preventDefault();
-  setLoading(true);
-  setError(null);
-
-  const newInvalidFields = {
-    name: !name,
-    email: !email,
-    phone: !phone,
-    address: !address,
-    acceptPolicy: !acceptPolicy,
-  };
-
-  setInvalidFields(newInvalidFields);
-
-  // Stop if any field is invalid
-  if (Object.values(newInvalidFields).some((v) => v)) {
-    setLoading(false);
-    return;
-  }
-
-      // 1️⃣ Submit order to backend
+      // Prepare payload
       const payload = {
-        name,
-        email,
-        phone,
-        address,
-        total: parseFloat(totalPrice.toFixed(2)),
-        items: cart.map(({ id, name, price, quantity }) => ({
-          id,
-          name,
-          price,
-          quantity,
-        })),
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        total: Number(totalPrice.toFixed(2)),
         deliveryCost: DELIVERY_COST,
+        items: cart.map((item) => ({
+          id: item.id ?? "unknown",
+          name: item.name,
+          price: Number(item.price),
+          quantity: Number(item.quantity),
+        })),
       };
 
+      // Submit order
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,17 +101,17 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
       }
 
       const data = await res.json();
-      console.log("✅ Order created:", data);
+      console.log("Order created:", data);
 
-      // 2️⃣ Send order confirmation email
+      // Send confirmation email
       const emailRes = await fetch("/api/send-email/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
-          name,
-          phone,
-          address,
+          email: payload.email,
+          name: payload.name,
+          phone: payload.phone,
+          address: payload.address,
           total: payload.total,
           deliveryCost: payload.deliveryCost,
           items: payload.items,
@@ -125,17 +120,20 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
       });
 
       if (!emailRes.ok) {
-        const err = await emailRes.json();
-        console.error("❌ Email error:", err);
+        console.error("Email failed");
         setError("Order saved but email failed to send.");
       } else {
-        console.log("📩 Confirmation email sent!");
+        console.log("Confirmation email sent!");
       }
 
-      // 3️⃣ Update UI
+      // Success
       setOrderPlaced(true);
       clearCart();
-      setName(""); setEmail(""); setPhone(""); setAddress(""); setAcceptPolicy(false);
+      setName("");
+      setEmail("");
+      setPhone("");
+      setAddress("");
+      setAcceptPolicy(false);
 
       setTimeout(() => {
         setOrderPlaced(false);
@@ -153,82 +151,84 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
   };
 
   return (
-  <>
-    {isOpen && (
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-    )}
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
-    <aside
-      className={`fixed top-0 right-0 h-screen w-[90%] sm:w-[400px] md:w-[480px] lg:w-[560px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out
-      ${isOpen ? "translate-x-0" : "translate-x-full"}`}
-      aria-label="Shopping Cart"
-    >
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <header className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="!text-xl font-semibold">Your Cart</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close Cart"
-            className="text-gray-600 hover:text-[#B3905E] transition cursor-pointer transition-transform duration-200 hover:scale-110"
-          >
-            <FiX size={24} />
-          </button>
-        </header>
+      <aside
+        className={`fixed top-0 right-0 h-screen w-[90%] sm:w-[400px] md:w-[480px] lg:w-[560px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out
+        ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        aria-label="Shopping Cart"
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <header className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 className="!text-xl font-semibold">Your Cart</h2>
+            <button
+              onClick={onClose}
+              aria-label="Close Cart"
+              className="text-gray-600 hover:text-[#B3905E] transition cursor-pointer transition-transform duration-200 hover:scale-110"
+            >
+              <FiX size={24} />
+            </button>
+          </header>
 
-        {/* Content (scrollable area) */}
-        <div className="flex-1 relative overflow-hidden">
-          {/* Cart view */}
-          <div
-            className={`absolute inset-0 p-4 transition-all duration-500 ease-in-out transform ${
-              showOrderForm
-                ? "opacity-0 -translate-x-10 pointer-events-none"
-                : "opacity-100 translate-x-0"
-            }`}
-          >
-            {cartCount === 0 ? (
-              <p className="text-center text-gray-500 mt-10">
-                Your cart is empty. <br /> Please make an order.
-              </p>
-            ) : (
-              <ul className="space-y-4 overflow-y-auto h-full pr-2 no-scrollbar">
-                {cart.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center space-x-4 justify-between border-b border-gray-300 last:border-b-0 pb-4 mb-4"
-                  >
-                    <div className="flex flex-col items-start w-full">
-                      <div className="flex items-start space-x-4 ">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          width={70}
-                          height={70}
-                          className="rounded-lg object-cover"
-                        />
-                        <div>
-                          <h3 className="!text-base font-semibold">
-                            {item.name}
-                          </h3>
+          {/* Content */}
+          <div className="flex-1 relative overflow-hidden">
+            {/* Cart view */}
+            <div
+              className={`absolute inset-0 p-4 transition-all duration-500 ease-in-out transform ${
+                showOrderForm
+                  ? "opacity-0 -translate-x-10 pointer-events-none"
+                  : "opacity-100 translate-x-0"
+              }`}
+            >
+              {cartCount === 0 ? (
+                <p className="text-center text-gray-500 mt-10">
+                  Your cart is empty. <br /> Please make an order.
+                </p>
+              ) : (
+                <ul className="space-y-4 overflow-y-auto h-full pr-2 no-scrollbar">
+                  {cart.map((item) => (
+                    <li
+                      key={item.id ?? item.name}
+                      className="flex items-center space-x-4 justify-between border-b border-gray-300 last:border-b-0 pb-4 mb-4"
+                    >
+                      <div className="flex flex-col items-start w-full">
+                        <div className="flex items-start space-x-4 ">
+                          {item.image ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              width={70}
+                              height={70}
+                              className="rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-[70px] h-[70px] bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 text-xs text-center">
+                              No Image
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="!text-base font-semibold">
+                              {item.name}
+                            </h3>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between w-full mt-2">
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Qty: {item.quantity}
-                          </p>
-                          <p className="text-sm font-semibold">
-                            $
-                            {(
-                              Number(item.price) * Number(item.quantity)
-                            ).toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
+                        <div className="flex items-center justify-between w-full mt-2">
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              Qty: {item.quantity}
+                            </p>
+                            <p className="text-sm font-semibold">
+                              ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                            </p>
+                          </div>
                           <div className="flex flex-row items-center gap-2">
                             <button
                               onClick={() => decreaseQuantity(item.id)}
@@ -254,121 +254,116 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Checkout form view */}
-          <div
-            className={`absolute inset-0 p-5 transition-all duration-500 ease-in-out transform flex flex-col 
-              ${showOrderForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"}`}
-          >
-            {/* Scrollable form body */}
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-              {orderPlaced && (
-                <div className="sticky top-0 left-0 right-0 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2">
-                  Your order has been placed successfully! <br /> Please check
-                  your email inbox for the order summary.
-                </div>
+                    </li>
+                  ))}
+                </ul>
               )}
+            </div>
 
-              {error && (
-                <p className="text-red-600 text-center font-semibold">{error}</p>
-              )}
+            {/* Checkout form view */}
+            <div
+              className={`absolute inset-0 p-5 transition-all duration-500 ease-in-out transform flex flex-col 
+                ${showOrderForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"}`}
+            >
+              <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                {orderPlaced && (
+                  <div className="sticky top-0 left-0 right-0 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2">
+                    Your order has been placed successfully! <br /> Please check
+                    your email inbox for the order summary.
+                  </div>
+                )}
 
-              {/* Form fields */}
-              <div className="pl-1">
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Full Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() =>
-                      setInvalidFields((prev) => ({ ...prev, name: false }))
-                    }
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                      invalidFields.name
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-[#B3905E]"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Email <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() =>
-                      setInvalidFields((prev) => ({ ...prev, email: false }))
-                    }
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                      invalidFields.email
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-[#B3905E]"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Phone <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    onFocus={() =>
-                      setInvalidFields((prev) => ({ ...prev, phone: false }))
-                    }
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                      invalidFields.phone
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-[#B3905E]"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Address <span className="text-red-600">*</span>
-                  </label>
-                  <textarea
-                    placeholder="Enter your address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    onFocus={() =>
-                      setInvalidFields((prev) => ({ ...prev, address: false }))
-                    }
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
-                      invalidFields.address
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-[#B3905E]"
-                    }`}
-                  />
+                {error && (
+                  <p className="text-red-600 text-center font-semibold">{error}</p>
+                )}
+
+                {/* Form fields */}
+                <div className="pl-1 space-y-3">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">
+                      Full Name <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onFocus={() =>
+                        setInvalidFields((prev) => ({ ...prev, name: false }))
+                      }
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                        invalidFields.name
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-[#B3905E]"
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">
+                      Email <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() =>
+                        setInvalidFields((prev) => ({ ...prev, email: false }))
+                      }
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                        invalidFields.email
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-[#B3905E]"
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">
+                      Phone <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      onFocus={() =>
+                        setInvalidFields((prev) => ({ ...prev, phone: false }))
+                      }
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                        invalidFields.phone
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-[#B3905E]"
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">
+                      Address <span className="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      placeholder="Enter your address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      onFocus={() =>
+                        setInvalidFields((prev) => ({ ...prev, address: false }))
+                      }
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                        invalidFields.address
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-[#B3905E]"
+                      }`}
+                    />
+                  </div>
                 </div>
               </div>
 
-            </div>
-
-            {/* Footer buttons */}
-            <div className="mt-4">
-              <div className="flex items-center space-x-2 mb-3">
-                <div
-                  className={`p-1 rounded-lg ${
-                    invalidFields.acceptPolicy ? "border border-red-500" : ""
-                  }`}
-                >
-                   <div>
+              {/* Footer buttons */}
+              <div className="mt-4">
+                <div className="flex items-start space-x-2 mb-3">
+                  <div className={`p-1 rounded-lg ${invalidFields.acceptPolicy ? "border border-red-500" : ""}`}>
                     <div className="text-left font-semibold text-md mt-2">
                       Items Total: ${totalItemsPrice.toFixed(2)}
                     </div>
@@ -378,64 +373,59 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                     <div className="text-left font-bold text-lg mb-3">
                       Total: ${totalPrice.toFixed(2)}
                     </div>
+
+                    <Checkbox
+                      label="I accept the delivery policy and terms"
+                      checked={acceptPolicy}
+                      onChange={(val) => {
+                        setAcceptPolicy(val);
+                        setInvalidFields((prev) => ({ ...prev, acceptPolicy: false }));
+                      }}
+                      policyLink="/terms-and-conditions"
+                    />
                   </div>
-
-                  <Checkbox
-                    label="I accept the delivery policy and terms"
-                    checked={acceptPolicy}
-                    onChange={(val) => {
-                      setAcceptPolicy(val);
-                      setInvalidFields((prev) => ({
-                        ...prev,
-                        acceptPolicy: false,
-                      }));
-                    }}
-                    policyLink="/terms-and-conditions"
-                  />
                 </div>
-              </div>
 
+                <Button
+                  variant="secondary"
+                  onClick={handlePlaceOrder}
+                  disabled={loading}
+                  className="w-full bg-burgundy text-white py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition"
+                >
+                  {loading ? "Placing Order..." : "Place Order"}
+                </Button>
+
+                <button
+                  onClick={() => setShowOrderForm(false)}
+                  className="w-full text-gray-700 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer mt-2"
+                >
+                  Back to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer in cart view */}
+          {!showOrderForm && cartCount > 0 && (
+            <footer className="relative p-4 border-t border-gray-200">
               <Button
                 variant="secondary"
-                onClick={handlePlaceOrder}
-                disabled={loading}
-                className="w-full bg-burgundy text-white py-3 rounded-xl font-semibold hover:bg-burgundy/90 transition"
+                onClick={() => setShowOrderForm(true)}
+                className="block w-full text-black text-center py-3 rounded-xl font-semibold cursor-pointer"
               >
-                {loading ? "Placing Order..." : "Place Order"}
+                Go to Checkout
               </Button>
 
               <button
-                onClick={() => setShowOrderForm(false)}
+                onClick={onClose}
                 className="w-full text-gray-700 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer mt-2"
               >
-                Back to Cart
+                Close
               </button>
-            </div>
-          </div>
+            </footer>
+          )}
         </div>
-
-        {/* Footer when in cart view */}
-        {!showOrderForm && cartCount > 0 && (
-          <footer className="relative p-4 border-t border-gray-200">
-            <Button
-              variant="secondary"
-              onClick={() => setShowOrderForm(true)}
-              className="block w-full text-black text-center py-3 rounded-xl font-semibold cursor-pointer"
-            >
-              Go to Checkout
-            </Button>
-
-            {/* Close Cart Button */}
-            <button
-              onClick={onClose}
-              className="w-full text-gray-700 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer mt-2"
-            >
-              Close
-            </button>
-          </footer>
-        )}
-      </div>
-    </aside>
-  </>
-);
+      </aside>
+    </>
+  );
 }

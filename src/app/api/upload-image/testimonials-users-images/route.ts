@@ -1,55 +1,55 @@
+// app/api/upload-image/testimonials-users/route.ts
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+import { v2 as cloudinary } from 'cloudinary';
 
-async function checkSession() {
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return { session, supabase };
+// Configure Cloudinary
+cloudinary.config({ secure: true });
+
+// Sanitize filename: remove accents and replace invalid chars
+function sanitizeFileName(name: string) {
+  return name
+    .normalize('NFD')                  // split accented letters
+    .replace(/[\u0300-\u036f]/g, '')  // remove accents
+    .replace(/[^a-zA-Z0-9.-]/g, '_'); // replace invalid chars with _
 }
 
 export async function POST(req: Request) {
   try {
-    const { session, supabase } = await checkSession();
-
-    if (!session?.user) {
+    // Check HTTP-only cookie for authentication
+    const authToken = (await cookies()).get('admin_token')?.value;
+    if (!authToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get file from FormData
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-
+    const file = formData.get('file') as File | null;
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Generate a unique filename
-    const timestamp = Date.now();
-    const fileName = `${timestamp}-${file.name}`;
+    // Convert file to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    // Upload the file
-    const { data, error } = await supabase.storage
-      .from('testimonials-users-images')
-      .upload(fileName, file);
+    // Sanitize filename
+    const sanitizedFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    // Upload to Cloudinary
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { public_id: sanitizedFileName, folder: 'Fork-and-Friends/testimonials-users-images' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result as { secure_url: string });
+        }
+      );
+      uploadStream.end(buffer);
+    });
 
-    // 10 years in seconds
-    const tenYearsInSeconds = 10 * 365 * 24 * 60 * 60;
-
-    // Create signed URL
-    const { data: signedUrlData, error: signedUrlError } =
-      await supabase.storage
-        .from('testimonials-users-images')
-        .createSignedUrl(fileName, tenYearsInSeconds);
-
-    if (signedUrlError) {
-      return NextResponse.json({ error: signedUrlError.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ signedUrl: signedUrlData.signedUrl });
-  } catch (error) {
-    return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+    return NextResponse.json({ signedUrl: result.secure_url });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unexpected error' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Button from "@/components/ui/Button";
 import PageTransition from "@/components/PageTransition";
 import Dropdown from "@/components/ui/Dropdown";
@@ -25,34 +25,23 @@ export default function ReservationPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [noTableModalOpen, setNoTableModalOpen] = useState(false);
   const [reservedTableNumber, setReservedTableNumber] = useState<number | null>(null);
-  const [backendReason, setBackendReason] = useState<string | null>(null);
 
-  // Separate dropdown open states
+  // Separate dropdown open states:
   const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
   const [seatingDropdownOpen, setSeatingDropdownOpen] = useState(false);
   const [guestsDropdownOpen, setGuestsDropdownOpen] = useState(false);
   const [occasionDropdownOpen, setOccasionDropdownOpen] = useState(false);
 
   const [invalidFields, setInvalidFields] = useState({
-    firstName: false,
-    lastName: false,
-    email: false,
-    phone: false,
-    date: false,
-    time: false,
-    guests: false,
-    seating: false,
-  });
-
-  // Refs for scroll
-  const firstNameRef = useRef<HTMLInputElement>(null);
-  const lastNameRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const phoneRef = useRef<HTMLInputElement>(null);
-  const dateRef = useRef<HTMLInputElement>(null);
-  const timeRef = useRef<HTMLDivElement>(null);
-  const guestsRef = useRef<HTMLDivElement>(null);
-  const seatingRef = useRef<HTMLDivElement>(null);
+  firstName: false,
+  lastName: false,
+  email: false,
+  phone: false,
+  date: false,
+  time: false,
+  guests: false,
+  seating: false,
+});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -62,168 +51,128 @@ export default function ReservationPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage("");
-    setReservedTableNumber(null);
-    setBackendReason(null);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setErrorMessage("");
+  setReservedTableNumber(null);
 
-    // Validate required fields
-    const newInvalidFields = {
-      firstName: !formData.firstName,
-      lastName: !formData.lastName,
-      email: !formData.email,
-      phone: !formData.phone,
-      date: !formData.date,
-      time: !formData.time,
-      guests: !formData.guests,
-      seating: !formData.seating,
-    };
-    setInvalidFields(newInvalidFields);
+  // Check required fields
+  const newInvalidFields = {
+    firstName: !formData.firstName,
+    lastName: !formData.lastName,
+    email: !formData.email,
+    phone: !formData.phone,
+    date: !formData.date,
+    time: !formData.time,
+    guests: !formData.guests,
+    seating: !formData.seating,
+  };
 
-    // Scroll to first invalid field
-    if (Object.values(newInvalidFields).some(Boolean)) {
-      if (newInvalidFields.firstName) firstNameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.lastName) lastNameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.email) emailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.phone) phoneRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.date) dateRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.time) timeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.guests) guestsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      else if (newInvalidFields.seating) seatingRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  setInvalidFields(newInvalidFields);
 
-      setIsSubmitting(false);
+  // Stop submission if any field is invalid
+  if (Object.values(newInvalidFields).some(v => v)) {
+    setIsSubmitting(false);
+    return;
+  }
+
+
+  try {
+    // 1️⃣ Submit reservation to your backend
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formData,
+        guests: parseInt(formData.guests, 10),
+      }),
+    });
+
+    if (res.status === 409) {
+      // No table available
+      setNoTableModalOpen(true);
       return;
     }
 
-    try {
-      const res = await fetch("/api/reservations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          guests: parseInt(formData.guests, 10),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.status === 409) {
-        setBackendReason(data.reason || "No tables available for the selected time.");
-        setNoTableModalOpen(true);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!res.ok) {
-        setErrorMessage(data.error || "Something went wrong");
-        setBackendReason(data.reason || null);
-        setNoTableModalOpen(true);
-        setIsSubmitting(false);
-        return;
-      }
-
-      setReservedTableNumber(data.table_id.table_number);
-      setShowConfirmation(true);
-
-      // Optionally, send email
-      await fetch("/api/send-email/reservation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          date: formData.date,
-          time: formData.time,
-          guests: formData.guests,
-          seating: formData.seating,
-          occasion: formData.occasion,
-          specialRequests: formData.specialRequests,
-          tableNumber: data.table_id.table_number,
-        }),
-      });
-
-    } catch (error: any) {
-      setErrorMessage(error.message || "Something went wrong");
-      setNoTableModalOpen(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const timeOptions = ["6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM","9:00 PM"];
-
-  const getAvailableTimes = () => {
-    if (!formData.date) return timeOptions;
-    const selectedDate = new Date(formData.date);
-    const now = new Date();
-
-    if (
-      selectedDate.getFullYear() === now.getFullYear() &&
-      selectedDate.getMonth() === now.getMonth() &&
-      selectedDate.getDate() === now.getDate()
-    ) {
-      return timeOptions.filter(timeStr => {
-        const [hourStr, minuteStr] = timeStr.split(/:| /);
-        const period = timeStr.includes("PM") ? "PM" : "AM";
-        let hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-
-        if (period === "PM" && hour !== 12) hour += 12;
-        if (period === "AM" && hour === 12) hour = 0;
-
-        const timeDate = new Date();
-        timeDate.setHours(hour, minute, 0, 0);
-
-        return timeDate > now;
-      });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to submit reservation");
     }
 
-    return timeOptions;
-  };
+    const data = await res.json();
+    setReservedTableNumber(data.table_id.table_number);
+    console.log("Reservation created:", data);
+    setShowConfirmation(true);
+
+    // 2️⃣ Send email with reservation details
+    await fetch("/api/send-email/reservation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: formData.email, // dynamic recipient
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        date: formData.date,
+        time: formData.time,
+        guests: formData.guests,
+        seating: formData.seating,
+        occasion: formData.occasion,
+        specialRequests: formData.specialRequests,
+        tableNumber: data.table_id.table_number, // include assigned table
+      }),
+    });
+
+  } catch (error: any) {
+    setErrorMessage(error.message || "Something went wrong");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <PageTransition>
       <div className="min-h-screen">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[#333333] opacity-70 z-10" />
-          <img
-            src="/images/bg-reservation.jpg"
-            alt="Background"
-            className="w-full h-full object-cover z-0"
-          />
-        </div>
-
+      <div className="absolute inset-0 bg-[#333333] opacity-70 z-10" />
+      <img
+        src="/images/bg-reservation.jpg" // <-- replace with your actual image path
+        alt="Background"
+        className="w-full h-full object-cover z-0"
+      />
+    </div>
+        {/* Hero Section */}
         <section className="relative pt-16 pb-10 text-center">
           <div className="container mx-auto px-6">
             <h1 className="text-3xl sm:text-5xl font-bold mb-4 !text-white">
               Reserve Your Table
             </h1>
-            <p className="text-lg sm:text-xl max-w-2xl mx-auto !text-white">
+            <p className="text-lg sm:text-xl  max-w-2xl mx-auto !text-white">
               Join us for an unforgettable dining experience. Book your table and let us create memorable moments for you.
             </p>
           </div>
         </section>
 
+        {/* Reservation Form */}
         <section className="pb-16">
           <div className="container mx-auto px-6">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gold/20">
                 <form onSubmit={handleSubmit} className="p-8">
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    {/* Personal Info */}
+                    {/* Personal Information */}
                     <div className="space-y-6">
                       <h3 className="!text-xl font-semibold border-b border-[#333333] pb-2">
                         Personal Information
                       </h3>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-base font-semibold mb-2">First Name *</label>
+                          <label className="block text-base font-semibold mb-2">
+                            First Name *
+                          </label>
                           <input
-                            ref={firstNameRef}
                             type="text"
                             name="firstName"
                             value={formData.firstName}
@@ -236,15 +185,16 @@ export default function ReservationPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-base font-semibold mb-2">Last Name *</label>
+                          <label className="block text-base font-semibold mb-2">
+                            Last Name *
+                          </label>
                           <input
-                            ref={lastNameRef}
                             type="text"
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleInputChange}
-                            onFocus={() => setInvalidFields(prev => ({ ...prev, lastName: false }))}
                             placeholder="Doe"
+                            onFocus={() => setInvalidFields(prev => ({ ...prev, lastName: false }))}
                             className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
                               invalidFields.lastName ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
                             }`}
@@ -253,9 +203,10 @@ export default function ReservationPage() {
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold mb-2">Email Address *</label>
+                        <label className="block text-base font-semibold mb-2">
+                          Email Address *
+                        </label>
                         <input
-                          ref={emailRef}
                           type="email"
                           name="email"
                           value={formData.email}
@@ -269,23 +220,26 @@ export default function ReservationPage() {
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold mb-2">Phone Number *</label>
+                        <label className="block text-base font-semibold mb-2">
+                          Phone Number *
+                        </label>
                         <input
-                          ref={phoneRef}
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="(555) 123-4567"
                           onFocus={() => setInvalidFields(prev => ({ ...prev, phone: false }))}
-                          className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
-                            invalidFields.phone ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
-                          }`}
+                            className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border ${
+                              invalidFields.phone ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
+                            }`}
                         />
                       </div>
 
-                      <div ref={seatingRef}>
-                        <label className="block text-base font-semibold mb-2">Seating Preference *</label>
+                      <div>
+                        <label className="block text-base font-semibold mb-2">
+                          Seating Preference *
+                        </label>
                         <Dropdown
                           label={formData.seating || "Select seating preference"}
                           isOpen={seatingDropdownOpen}
@@ -307,12 +261,15 @@ export default function ReservationPage() {
 
                     {/* Reservation Details */}
                     <div className="space-y-6">
-                      <h3 className="!text-xl font-semibold border-b border-[#333333] pb-2">Reservation Details</h3>
+                      <h3 className="!text-xl font-semibold border-b border-[#333333] pb-2">
+                        Reservation Details
+                      </h3>
 
                       <div>
-                        <label className="block text-base font-semibold mb-2">Preferred Date *</label>
+                        <label className="block text-base font-semibold mb-2">
+                          Preferred Date *
+                        </label>
                         <input
-                          ref={dateRef}
                           type="date"
                           name="date"
                           value={formData.date}
@@ -325,8 +282,10 @@ export default function ReservationPage() {
                         />
                       </div>
 
-                      <div ref={timeRef}>
-                        <label className="block text-base font-semibold mb-2">Preferred Time *</label>
+                      <div>
+                        <label className="block text-base font-semibold mb-2">
+                          Preferred Time *
+                        </label>
                         <Dropdown
                           label={formData.time || "Select a time"}
                           isOpen={timeDropdownOpen}
@@ -337,7 +296,7 @@ export default function ReservationPage() {
                             setInvalidFields(prev => ({ ...prev, time: false }));
                           }}
                           selected={formData.time}
-                          options={getAvailableTimes()}
+                          options={["6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM","9:00 PM"]}
                           buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
                             invalidFields.time ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
                           }`}
@@ -345,8 +304,10 @@ export default function ReservationPage() {
                         />
                       </div>
 
-                      <div ref={guestsRef}>
-                        <label className="block text-base font-semibold mb-2">Number of Guests *</label>
+                      <div>
+                        <label className="block text-base font-semibold mb-2">
+                          Number of Guests *
+                        </label>
                         <Dropdown
                           label={`${formData.guests} ${formData.guests === "1" ? "Guest" : "Guests"}`}
                           isOpen={guestsDropdownOpen}
@@ -357,16 +318,18 @@ export default function ReservationPage() {
                             setInvalidFields(prev => ({ ...prev, guests: false }));
                           }}
                           selected={formData.guests}
-                          options={["1","2","3","4","5","6","7","8","9","10"]}
+                          options={[...Array(12)].map((_, i) => (i + 1).toString())}
                           buttonClassName={`w-full px-4 py-3 border rounded-lg transition-all duration-300 text-left ${
                             invalidFields.guests ? "border-red-500 focus:ring-red-500" : "border-[#333333] focus:ring-[#B3905E]"
                           }`}
-                          listClassName="w-full !max-h-110"
+                          listClassName="w-full"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold mb-2">Special Occasion (Optional)</label>
+                        <label className="block text-base font-semibold mb-2">
+                          Special Occasion (Optional)
+                        </label>
                         <Dropdown
                           label={formData.occasion || "Select an occasion"}
                           isOpen={occasionDropdownOpen}
@@ -379,7 +342,12 @@ export default function ReservationPage() {
                             setOccasionDropdownOpen(false);
                           }}
                           selected={formData.occasion}
-                          options={["Business","Anniversary","Celebration","Other"]}
+                          options={[
+                            "Business",
+                            "Anniversary",
+                            "Celebration",
+                            "Other",
+                          ]}
                           buttonClassName="w-full px-4 py-3 border border-[#333333] rounded-lg transition-all duration-300 text-left"
                           listClassName="w-full"
                         />
@@ -389,7 +357,9 @@ export default function ReservationPage() {
 
                   {/* Special Requests */}
                   <div className="mb-8">
-                    <label className="block text-base font-semibold mb-2">Special Requests or Dietary Requirements (Optional)</label>
+                    <label className="block text-base font-semibold mb-2">
+                      Special Requests or Dietary Requirements (Optional)
+                    </label>
                     <textarea
                       name="specialRequests"
                       value={formData.specialRequests}
@@ -404,6 +374,7 @@ export default function ReservationPage() {
                     <p className="text-red-600 mb-6 text-center font-medium">{errorMessage}</p>
                   )}
 
+                  {/* Submit Button */}
                   <div className="text-center">
                     <Button
                       type="submit"
@@ -421,7 +392,7 @@ export default function ReservationPage() {
                     <h4 className="font-semibold mb-2">Please Note:</h4>
                     <ul className="text-sm  space-y-1">
                       <li>• Reservations are held for 15 minutes past the reserved time</li>
-                      <li>• For reservations of more than 10 guests, please call us directly at (555) 123-4567</li>
+                      <li>• For parties of 8 or more, please call us directly at (555) 123-4567</li>
                       <li>• Cancellations must be made at least 2 hours in advance</li>
                       <li>• We accommodate dietary restrictions with advance notice</li>
                     </ul>
@@ -432,39 +403,96 @@ export default function ReservationPage() {
           </div>
         </section>
       </div>
-
-      {/* No Table Modal */}
+      {/* No Table Available Modal */}
       {noTableModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-sm w-[90%] sm:w-full text-center shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4">Sorry, no tables available</h2>
-            {backendReason && <p className="mb-4 text-gray-700">{backendReason}</p>}
-            <button
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <h2 className="!text-2xl font-bold mb-4">No Tables Available</h2>
+            <p className="mb-6">
+              Sorry, we currently have no available tables for your selected date and time.
+              Please try another time or date. <br></br> For further assistance, call us at <br></br> (111) 111-1111. Thank you for your understanding!
+            </p>
+            <Button
+              variant="primary"
               onClick={() => setNoTableModalOpen(false)}
-              className="mt-4 px-6 py-2 bg-gold text-white rounded-lg hover:bg-gold/90 transition"
+              size="md"
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       )}
-
       {/* Confirmation Modal */}
-      {showConfirmation && reservedTableNumber && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-sm w-[90%] sm:w-full text-center shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4">Reservation Confirmed!</h2>
-            <p className="mb-4">Your table number is <span className="font-semibold">{reservedTableNumber}</span>.</p>
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Blurred Background */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full z-50">
+            {/* Close Button */}
             <button
+              className="absolute top-4 right-4 text-gray-500 text-2xl font-bold cursor-pointer"
               onClick={() => setShowConfirmation(false)}
-              className="mt-4 px-6 py-2 bg-gold text-white rounded-lg hover:bg-gold/90 transition"
             >
-              Close
+              <FiX size="24" className="hover:text-[#B3905E]"/>
             </button>
+
+            <h1 className="!text-2xl md:text-4xl font-bold mb-4 text-center text-[#B3905E]">
+              Reservation Successfully Made!
+            </h1>
+
+            <p className="text-center mb-6 text-neutral-800">
+              Thank you, <span className="font-semibold">{formData.firstName}</span>! Your table for <span className="font-semibold">{formData.guests} {formData.guests === "1" ? "guest" : "guests"}</span> has been reserved.
+              <br />
+              <strong className="text-[#B3905E]">Table Number: {reservedTableNumber}</strong>
+            </p>
+
+            <div className="bg-gold/10 rounded-lg p-6 mb-6 border border-gold/20 shadow-sm">
+              <h3 className="font-semibold mb-3 text-lg text-neutral-900">Reservation Details:</h3>
+              <div className="space-y-2 text-neutral-700">
+                <p><span className="font-medium font-semibold">Date:</span> {new Date(formData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><span className="font-medium font-semibold">Time:</span> {formData.time}</p>
+                <p><span className="font-medium font-semibold">Party Size:</span> {formData.guests} {formData.guests === "1" ? "guest" : "guests"}</p>
+                <p><span className="font-medium font-semibold">Contact Email:</span> {formData.email}</p>
+                <p><span className="font-medium font-semibold">Seating:</span> {formData.seating || "No preference"}</p>
+                {formData.occasion && <p><span className="font-medium font-semibold">Occasion:</span> {formData.occasion}</p>}
+                {formData.specialRequests && <p><span className="font-medium font-semibold">Special Requests:</span> {formData.specialRequests}</p>}
+              </div>
+            </div>
+
+            <p className="mb-6 text-center text-neutral-800">
+              A summary of your reservation has been sent to <span className="font-medium">{formData.email}</span> with all the details above. Please check your inbox for reference. We look forward to welcoming you!
+            </p>
+
+            <div className="text-center">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => {
+                  setShowConfirmation(false);
+                  setFormData({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phone: "",
+                    date: "",
+                    time: "",
+                    guests: "2",
+                    specialRequests: "",
+                    occasion: "",
+                    seating: ""
+                  });
+                }}
+              >
+                Make Another Reservation
+              </Button>
+            </div>
           </div>
         </div>
       )}
-    </PageTransition>
-  );
-}
 
+          </PageTransition>
+        );
+      }
+      

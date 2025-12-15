@@ -97,58 +97,62 @@ export default function AdminContactPage() {
       </FilteringBar>
 
       {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <Spinner name="contacts" />
+  <div className="flex justify-center items-center h-96">
+    <Spinner name="contacts" />
+  </div>
+) : filteredContacts.length === 0 ? (
+  <div className="text-center mt-12">
+    <p className="text-gray-500">
+      No contact found.
+    </p>
+  </div>
+) : (
+  <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
+    {filteredContacts.map((contact) => (
+      <div
+        key={contact.id}
+        className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
+      >
+        <h2 className="!text-xl font-semibold text-[#B3905E] mb-2">
+          {contact.first_name} {contact.last_name}
+        </h2>
+        <p className="!text-sm text-gray-600 mb-1">
+          <span className="font-semibold">Email:</span> {contact.email}
+        </p>
+        <p className="text-sm text-gray-600 mb-1">
+          <span className="font-semibold">Phone:</span> {contact.phone}
+        </p>
+        <p className="text-sm text-gray-600 mb-1">
+          <span className="font-semibold">Subject:</span> {contact.subject}
+        </p>
+        {/* Message */}
+        <p className="text-sm text-gray-600 mb-1 font-semibold">Message:</p>
+        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4 text-gray-800 text-sm whitespace-pre-wrap break-words">
+          {contact.message}
         </div>
-      ) : (
-        <>
-          <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
-            {filteredContacts.map((contact) => (
-              <div
-                key={contact.id}
-                className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
-              >
-                <h2 className="!text-xl font-semibold text-[#B3905E] mb-2">
-                  {contact.first_name} {contact.last_name}
-                </h2>
-                <p className="!text-sm text-gray-600 mb-1">
-                  <span className="font-semibold">Email:</span> {contact.email}
-                </p>
-                <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-semibold">Phone:</span> {contact.phone}
-                </p>
-                <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-semibold">Subject:</span> {contact.subject}
-                </p>
-                {/* Message */}
-                <p className="text-sm text-gray-600 mb-1 font-semibold">Message:</p>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4 text-gray-800 text-sm whitespace-pre-wrap break-words">
-                    {contact.message}
-                </div>
-                <div className="flex justify-between items-center mt-5">
-                    {/* Timestamp */}
-                <span className="text-xs text-gray-400">
-                    {new Date(contact.created_at).toLocaleString()}
-                </span>
-                {/* Delete Button */}
-                <div className="flex gap-2 flex-wrap">
-                    <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(contact.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
-                    disabled={deletingId === contact.id}
-                    >
-                    <Trash2 size={14} />
-                    {deletingId === contact.id ? 'Deleting…' : 'Delete'}
-                    </button>
-                </div>
-                </div>
-
-              </div>
-            ))}
+        <div className="flex justify-between items-center mt-5">
+          {/* Timestamp */}
+          <span className="text-xs text-gray-400">
+            {new Date(contact.created_at).toLocaleString()}
+          </span>
+          {/* Delete Button */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(contact.id)}
+              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+              disabled={deletingId === contact.id}
+            >
+              <Trash2 size={14} />
+              {deletingId === contact.id ? 'Deleting…' : 'Delete'}
+            </button>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
 
       {showDeleteConfirm && (
         <ConfirmDialog

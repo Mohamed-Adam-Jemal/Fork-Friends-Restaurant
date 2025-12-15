@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Trash2, Edit3, X, PlusCircle } from 'lucide-react';
+import { Trash2, Edit3, PlusCircle } from 'lucide-react';
 import FilteringBar from '@/components/ui/FilteringBar';
 import Spinner from '@/components/ui/Spinner';
 import Button from '@/components/ui/Button';
@@ -30,7 +30,6 @@ export default function TablesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal state
   const [showForm, setShowForm] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
@@ -71,24 +70,16 @@ export default function TablesPage() {
 
   useEffect(() => {
     const filtered = tables.filter((table) => {
-      const matchesTable = table.tableNumber
-        .toString()
-        .includes(searchTableNum.trim());
-
-      const matchesSeats = searchSeats
-        ? table.seats.toString().includes(searchSeats.trim())
-        : true;
-
+      const matchesTable = table.tableNumber.toString().includes(searchTableNum.trim());
+      const matchesSeats = searchSeats ? table.seats.toString().includes(searchSeats.trim()) : true;
       const matchesAvailability =
         searchAvailability === 'all'
           ? true
           : searchAvailability === 'available'
           ? table.availability
           : !table.availability;
-
       return matchesTable && matchesSeats && matchesAvailability;
     });
-
     setFilteredTables(filtered);
   }, [tables, searchTableNum, searchSeats, searchAvailability]);
 
@@ -155,14 +146,12 @@ export default function TablesPage() {
     try {
       let res;
       if (editingTable) {
-        // Editing an existing table (PUT)
         res = await fetch(`/api/tables/${editingTable.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
       } else {
-        // Adding a new table (POST)
         res = await fetch(`/api/tables`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -232,68 +221,70 @@ export default function TablesPage() {
         <div className="flex justify-center items-center h-96">
           <Spinner name="tables" />
         </div>
+      ) : filteredTables.length === 0 ? (
+        <div className="text-center mt-12 text-gray-500">
+          <p>Try adjusting your filters or add a new table.</p>
+        </div>
       ) : (
-        <>
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-            {filteredTables.map((table) => (
-              <div
-                key={table.id}
-                className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
-              >
-                <div className="relative flex flex-row justify-between items-start">
-                  <div>
-                    <h2 className="!text-xl font-semibold text-[#B3905E] mb-2">
-                      Table {table.tableNumber}
-                    </h2>
-                    <p className="!text-sm text-gray-600 mb-1">
-                      <span className="font-semibold">Seats:</span> {table.seats}
-                    </p>
-                    <p className="!text-sm text-gray-600 mb-1">
-                      <span className="font-semibold">Type:</span> {table.type}
-                    </p>
-                    <span className="text-xs text-gray-400">
-                      Created: {new Date(table.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <span
-                    className={`relative top-0 right-0 w-fit px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-300 ${
-                      table.availability ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {table.availability ? 'Available' : 'Reserved'}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+          {filteredTables.map((table) => (
+            <div
+              key={table.id}
+              className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
+            >
+              <div className="relative flex flex-row justify-between items-start">
+                <div>
+                  <h2 className="!text-xl font-semibold text-[#B3905E] mb-2">
+                    Table {table.tableNumber}
+                  </h2>
+                  <p className="!text-sm text-gray-600 mb-1">
+                    <span className="font-semibold">Seats:</span> {table.seats}
+                  </p>
+                  <p className="!text-sm text-gray-600 mb-1">
+                    <span className="font-semibold">Type:</span> {table.type}
+                  </p>
+                  <span className="text-xs text-gray-400">
+                    Created: {new Date(table.createdAt).toLocaleString()}
                   </span>
                 </div>
-
-                <div className="mt-5 flex justify-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => openEditForm(table)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center gap-1 cursor-pointer"
-                  >
-                    <Edit3 size={14} /> Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(table.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
-                    disabled={deletingId === table.id}
-                  >
-                    <Trash2 size={14} />
-                    {deletingId === table.id ? 'Deleting…' : 'Delete'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleAvailability(table)}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition cursor-pointer disabled:opacity-50"
-                    disabled={updatingId === table.id}
-                  >
-                    Toggle
-                  </button>
-                </div>
+                <span
+                  className={`relative top-0 right-0 w-fit px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-300 ${
+                    table.availability ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {table.availability ? 'Available' : 'Reserved'}
+                </span>
               </div>
-            ))}
-          </div>
-        </>
+
+              <div className="mt-5 flex justify-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => openEditForm(table)}
+                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center gap-1 cursor-pointer"
+                >
+                  <Edit3 size={14} /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(table.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                  disabled={deletingId === table.id}
+                >
+                  <Trash2 size={14} />
+                  {deletingId === table.id ? 'Deleting…' : 'Delete'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleAvailability(table)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition cursor-pointer disabled:opacity-50"
+                  disabled={updatingId === table.id}
+                >
+                  Toggle
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {showDeleteConfirm && (

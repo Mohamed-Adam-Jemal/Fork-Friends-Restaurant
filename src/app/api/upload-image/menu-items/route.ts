@@ -1,54 +1,45 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+// app/api/upload-image/menu-items/route.ts
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import cloudinary from "@/lib/cloudinary";
 
-async function checkSession() {
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return { session, supabase };
+// Sanitize filename
+function sanitizeFileName(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9.-]/g, "_");
 }
 
 export async function POST(req: Request) {
   try {
-    const { session, supabase } = await checkSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check HTTP-only cookie
+    const authToken = (await cookies()).get("admin_token")?.value;
+    if (!authToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get("file") as File | null;
+    if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-    }
+    const arrayBuffer = await file.arrayBuffer();
+    const sanitizedFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
 
-    // Generate a unique filename
-    const timestamp = Date.now();
-    const fileName = `${timestamp}-${file.name}`;
+    // Upload to Cloudinary using a Promise wrapper
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "Fork-and-Friends/menu-items", public_id: sanitizedFileName },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(Buffer.from(arrayBuffer));
+    });
 
-    // Upload the file
-    const { data, error } = await supabase.storage
-      .from('menu-images')
-      .upload(fileName, file);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // 10 years in seconds = 10 * 365 * 24 * 60 * 60
-    const tenYearsInSeconds = 10 * 365 * 24 * 60 * 60;
-
-    // Create signed URL
-    const { data: signedUrlData, error: signedUrlError } =
-      await supabase.storage
-        .from('menu-images')
-        .createSignedUrl(fileName, tenYearsInSeconds);
-
-    if (signedUrlError) {
-      return NextResponse.json({ error: signedUrlError.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ signedUrl: signedUrlData.signedUrl });
-  } catch (error) {
-    return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+    return NextResponse.json({ signedUrl: result.secure_url });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Unexpected error" }, { status: 500 });
   }
 }

@@ -10,7 +10,7 @@ import SomethingWentWrong from '@/components/SomethingWentWrong';
 type Testimonial = {
   id: number;
   name: string;
-  photo: string;
+  photo?: string;
   rating: number;
   content: string;
   created_at: string;
@@ -24,7 +24,6 @@ export default function AdminTestimonialPage() {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export default function AdminTestimonialPage() {
     try {
       const res = await fetch('/api/testimonials');
       if (!res.ok) throw new Error('Failed to fetch testimonials');
-      const data = await res.json();
+      const data: Testimonial[] = await res.json();
       setTestimonials(data);
     } catch (err: any) {
       console.error(err);
@@ -76,7 +75,6 @@ export default function AdminTestimonialPage() {
     }
   };
 
-  // Helper to render stars
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -113,54 +111,59 @@ export default function AdminTestimonialPage() {
         <div className="flex justify-center items-center h-96">
           <Spinner name="testimonials" />
         </div>
+      ) : filteredTestimonials.length === 0 ? (
+        <div className="text-center mt-12 text-gray-500">
+          <p>No testimonial found.</p>
+        </div>
       ) : (
-        <>
-          <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
-            {filteredTestimonials.map((t) => (
-              <div
-                key={t.id}
-                className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
-              >
-                {/* Header: photo + name */}
-                <div className="flex items-center gap-3 mb-3">
+        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
+          {filteredTestimonials.map((t) => (
+            <div
+              key={t.id}
+              className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 min-w-[280px]"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                {t.photo ? (
                   <img
                     src={t.photo}
                     alt={t.name}
                     className="w-12 h-12 rounded-full object-cover border border-gray-300"
                   />
-                  <div>
-                    <h2 className="!text-lg font-semibold text-[#B3905E]">{t.name}</h2>
-                    {renderStars(t.rating)}
+                ) : (
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-xs">
+                    No Image
                   </div>
-                </div>
-
-                {/* Content */}
-                <p className="text-sm text-gray-600 mb-1 font-semibold">Testimonial:</p>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4 text-gray-800 text-sm whitespace-pre-wrap break-words">
-                  {t.content}
-                </div>
-
-                {/* Footer: created date + actions */}
-                <div className="flex justify-between items-center mt-5">
-                  <span className="text-xs text-gray-400">
-                    {new Date(t.created_at).toLocaleString()}
-                  </span>
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => setShowDeleteConfirm(t.id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
-                      disabled={deletingId === t.id}
-                    >
-                      <Trash2 size={14} />
-                      {deletingId === t.id ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </div>
+                )}
+                <div>
+                  <h2 className="!text-lg font-semibold text-[#B3905E]">{t.name}</h2>
+                  {renderStars(t.rating)}
                 </div>
               </div>
-            ))}
-          </div>
-        </>
+
+              <p className="text-sm text-gray-600 mb-1 font-semibold">Testimonial:</p>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4 text-gray-800 text-sm whitespace-pre-wrap break-words">
+                {t.content}
+              </div>
+
+              <div className="flex justify-between items-center mt-5">
+                <span className="text-xs text-gray-400">
+                  {t.created_at ? new Date(t.created_at).toLocaleString() : ''}
+                </span>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(t.id)}
+                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                    disabled={deletingId === t.id}
+                  >
+                    <Trash2 size={14} />
+                    {deletingId === t.id ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {showDeleteConfirm && (

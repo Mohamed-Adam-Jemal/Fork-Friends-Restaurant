@@ -260,6 +260,13 @@ export default function TeamPage() {
         })}
       </div>
 
+      {!loading && filteredMembers.length === 0 && (
+          <p className="col-span-full text-center text-gray-500">
+            Try adjusting your filters or add a new team member.
+          </p>
+      )}
+
+
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/10 backdrop-blur-sm">

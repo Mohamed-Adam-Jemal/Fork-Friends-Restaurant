@@ -7,8 +7,19 @@ import { requireAuth } from "@/lib/auth";
 // GET all menu items (PUBLIC)
 export async function GET(req: NextRequest) {
   try {
+    // Explicitly select fields
     const items = await prisma.menuItem.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        image: true,
+        category: true,
+        cuisine: true,
+        chefChoice: true, // Prisma field
+      },
     });
 
     return NextResponse.json(items);
@@ -23,7 +34,6 @@ export async function GET(req: NextRequest) {
 
 // POST new menu items (PROTECTED)
 export async function POST(req: NextRequest) {
-  // Auth check here
   const authCheck = requireAuth(req);
   if (authCheck instanceof NextResponse) return authCheck;
 
