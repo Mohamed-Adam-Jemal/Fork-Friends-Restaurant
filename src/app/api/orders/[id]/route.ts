@@ -1,38 +1,32 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 // ==============================
 // GET single order (PUBLIC)
 // ==============================
 export async function GET(
-  _: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = parseInt(params.id, 10);
-
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    const order = await prisma.order.findUnique({
-      where: { id },
-    });
+    const order = await prisma.order.findUnique({ where: { id } });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    return NextResponse.json(order, { status: 200 });
+    return NextResponse.json(order);
   } catch (error) {
     console.error("GET error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
   }
 }
 
@@ -48,6 +42,10 @@ export async function PUT(
 
   try {
     const id = parseInt(params.id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
     const body = await req.json();
     const { name, email, phone, address, total, items, status } = body;
 
@@ -67,16 +65,13 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(updatedOrder, { status: 200 });
+    return NextResponse.json(updatedOrder);
   } catch (error: any) {
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
     console.error("PUT error:", error);
-    return NextResponse.json(
-      { error: "Failed to update order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
 
@@ -92,26 +87,17 @@ export async function PATCH(
 
   try {
     const id = parseInt(params.id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
     const body = await req.json();
-
-    const allowedFields = [
-      "name",
-      "email",
-      "phone",
-      "address",
-      "total",
-      "items",
-      "status",
-    ];
-
+    const allowedFields = ["name", "email", "phone", "address", "total", "items", "status"];
     const updates: Record<string, any> = {};
 
     for (const key of allowedFields) {
       if (body[key] !== undefined) {
-        if (
-          key === "status" &&
-          (body[key] === "In Progress" || body[key] === "Done")
-        ) {
+        if (key === "status" && (body[key] === "In Progress" || body[key] === "Done")) {
           updates[key] = body[key];
         } else if (key !== "status") {
           updates[key] = body[key];
@@ -120,27 +106,18 @@ export async function PATCH(
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: "No valid fields provided for update" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: updates,
-    });
+    const updatedOrder = await prisma.order.update({ where: { id }, data: updates });
 
-    return NextResponse.json(updatedOrder, { status: 200 });
+    return NextResponse.json(updatedOrder);
   } catch (error: any) {
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
     console.error("PATCH error:", error);
-    return NextResponse.json(
-      { error: "Failed to update order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
 
@@ -156,23 +133,18 @@ export async function DELETE(
 
   try {
     const id = parseInt(params.id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
 
-    await prisma.order.delete({
-      where: { id },
-    });
+    await prisma.order.delete({ where: { id } });
 
-    return NextResponse.json(
-      { message: "Order deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Order deleted successfully" });
   } catch (error: any) {
     if (error.code === "P2025") {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
     console.error("DELETE error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
   }
 }

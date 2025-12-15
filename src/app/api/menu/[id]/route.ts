@@ -1,8 +1,8 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 // ==============================
 // GET menu item by ID (PUBLIC)
@@ -13,29 +13,20 @@ export async function GET(
 ) {
   try {
     const id = Number(params.id);
-
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    const item = await prisma.menuItem.findUnique({
-      where: { id },
-    });
+    const item = await prisma.menuItem.findUnique({ where: { id } });
 
     if (!item) {
-      return NextResponse.json(
-        { error: "Menu item not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Menu item not found" }, { status: 404 });
     }
 
-    return NextResponse.json(item, { status: 200 });
+    return NextResponse.json(item);
   } catch (error) {
     console.error("GET error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch menu item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch menu item" }, { status: 500 });
   }
 }
 
@@ -62,13 +53,10 @@ export async function PATCH(
       data: updates,
     });
 
-    return NextResponse.json(updatedItem, { status: 200 });
+    return NextResponse.json(updatedItem);
   } catch (error) {
     console.error("PATCH error:", error);
-    return NextResponse.json(
-      { error: "Failed to update menu item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update menu item" }, { status: 500 });
   }
 }
 
@@ -88,19 +76,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    await prisma.menuItem.delete({
-      where: { id },
-    });
+    await prisma.menuItem.delete({ where: { id } });
 
-    return NextResponse.json(
-      { message: "Menu item deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Menu item deleted successfully" });
   } catch (error) {
     console.error("DELETE error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete menu item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete menu item" }, { status: 500 });
   }
 }
