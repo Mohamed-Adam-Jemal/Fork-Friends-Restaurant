@@ -4,20 +4,22 @@ import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
-// Type for the route context
-interface RouteContext {
-  params: { id: string };
+// Helper to extract ID from the request URL
+function getIdFromRequest(request: NextRequest) {
+  const url = new URL(request.url);
+  const parts = url.pathname.split("/");
+  return parts[parts.length - 1]; // last part should be the ID
 }
 
 // ==============================
 // GET contact by ID (PROTECTED)
 // ==============================
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest) {
   const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
   try {
-    const { id } = context.params;
+    const id = getIdFromRequest(request);
 
     if (!id) {
       return NextResponse.json({ error: "ID is required." }, { status: 400 });
@@ -37,12 +39,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 // PATCH contact by ID
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(request: NextRequest) {
   const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
   try {
-    const { id } = context.params;
+    const id = getIdFromRequest(request);
 
     if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
 
@@ -61,12 +63,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE contact by ID
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest) {
   const authCheck = requireAuth(request);
   if (authCheck instanceof NextResponse) return authCheck;
 
   try {
-    const { id } = context.params;
+    const id = getIdFromRequest(request);
 
     if (!id) return NextResponse.json({ error: "ID is required." }, { status: 400 });
 
