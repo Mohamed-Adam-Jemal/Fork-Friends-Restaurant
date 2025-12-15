@@ -13,7 +13,6 @@
     "@fortawesome/react-fontawesome": "^0.2.3",
     "@google/genai": "^1.15.0",
     "@heroui/theme": "^2.4.20",
-    "@netlify/next": "^1.4.9",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.54.0",
     "@tabler/icons-react": "^3.34.1",
